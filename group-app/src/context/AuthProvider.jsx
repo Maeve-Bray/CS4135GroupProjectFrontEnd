@@ -8,8 +8,9 @@ export function AuthProvider({ children }) {
     const email = localStorage.getItem("email");
     const role = localStorage.getItem("role");
     const status = localStorage.getItem("status");
+    const userId = localStorage.getItem("userId");
 
-    return token ? { token, email, role, status } : null;
+    return token ? { token, email, role, status, userId } : null;
   });
 
   const login = (data) => {
@@ -17,6 +18,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem("email", data.email);
     localStorage.setItem("role", data.role);
     localStorage.setItem("status", data.status);
+    localStorage.setItem("userId",data.id);
 
     setAuth(data);
   };
@@ -26,6 +28,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("email");
     localStorage.removeItem("role");
     localStorage.removeItem("status");
+    localStorage.removeItem("userId");
 
     setAuth(null);
   };
