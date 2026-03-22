@@ -6,6 +6,7 @@ import BookSession from "./BookingSession";
 import StudentBookings from "./StudentBookings";
 import TutorBookings from "./TutorBookings";
 import TutorSchedule from "./TutorSchedule";
+import TutorProfile from "./TutorProfile";
 import "./App.css";
 
 function App() {
@@ -41,6 +42,9 @@ function App() {
                 <button onClick={() => setCurrentPage("tutorSchedule")} style={{ marginLeft: "10px" }}>
                   My Schedule
                 </button>
+                 <button onClick={() => setCurrentPage("tutorProfile")} style={{ marginLeft: "10px" }}>
+                  My Profile
+                </button>
               </>
             )}
           </div>
@@ -60,6 +64,10 @@ function App() {
 
             {auth.role === "TUTOR" && currentPage === "tutorSchedule" && (
               <TutorSchedule tutorId={userId} />
+            )}
+
+            {auth.role === "TUTOR" && currentPage === "tutorProfile" && (
+              <TutorProfile tutorId={userId} />
             )}
           </div>
 
