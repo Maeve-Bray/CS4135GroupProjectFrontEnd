@@ -27,14 +27,25 @@
   margin-top: 12px;
 }
 
+
+html {
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto;
+}
+
 #root {
   width: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
 }
 
 body {
   margin: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
   font-family: Arial, sans-serif;
   background: #f5f7fb;
   color: #1f2937;
@@ -53,7 +64,9 @@ body {
 .app-shell {
   min-height: 100vh;
   padding: 32px;
+  padding-bottom: 48px;
   background: #cdf8ff;
+  overflow: visible;
 }
 
 .dashboard-container {
@@ -98,6 +111,13 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 20px;
+   align-content: start;
+}
+
+/* Keeps My Profile on its own row so it isn’t clipped*/
+.dashboard-card-full-row {
+  grid-column: 1 / -1;
+  max-width: 420px;
 }
 
 .dashboard-card {

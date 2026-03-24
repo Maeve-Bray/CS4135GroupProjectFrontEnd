@@ -6,8 +6,10 @@ import BookSession from "./BookingSession";
 import StudentBookings from "./StudentBookings";
 import TutorBookings from "./TutorBookings";
 import TutorSchedule from "./TutorSchedule";
-import HomePage from "./Homepage";
+import TutorProfile from "./TutorProfile";
+import HomePage from "./HomePage";
 import AdminDashboard from "./AdminDashboard";
+
 import "./App.css";
 
 function App() {
@@ -46,10 +48,14 @@ function App() {
           {auth.role === "TUTOR" && currentPage === "tutorSchedule" && (
             <TutorSchedule tutorId={userId} />
           )}
+          
+          {auth.role === "TUTOR" && currentPage === "tutorProfile" && (
+            <TutorProfile tutorId={userId} />
+          )}
         </div>
 
         <div className="logout-row">
-          <button onClick={logout}>Logout</button>
+          <button type="button" onClick={logout}>Logout</button>
         </div>
       </div>
     );
@@ -61,6 +67,7 @@ function App() {
 
       <button
         className="switch-button"
+        type="button"
         onClick={() => setShowRegister(!showRegister)}
       >
         {showRegister

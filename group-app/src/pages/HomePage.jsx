@@ -15,7 +15,6 @@ function HomePage({ setCurrentPage }) {
         </p>
       </div>
 
-      <div className="dashboard-grid">
         {auth.role === "STUDENT" && (
           <>
             <div className="dashboard-card">
@@ -33,21 +32,31 @@ function HomePage({ setCurrentPage }) {
               <p>
                 View your current and previous bookings in one place.
               </p>
-              <button onClick={() => setCurrentPage("studentBookings")}>
+              <button type="button"onClick={() => setCurrentPage("studentBookings")}>
                 View Bookings
               </button>
             </div>
           </>
         )}
+        
+      {auth.role === "TUTOR" && (
+        <div className="dashboard-grid dashboard-grid--tutor">
+          <div className="dashboard-card">
+            <h2>My Profile</h2>
+            <p>
+              Update your biography, skills, and proficiency for students.
+            </p>
+            <button type="button" onClick={() => setCurrentPage("tutorProfile")}>
+              Edit Profile
+            </button>
+          </div>
 
-        {auth.role === "TUTOR" && (
-          <>
             <div className="dashboard-card">
               <h2>Booking Requests</h2>
               <p>
                 Review incoming requests from students and manage approvals.
               </p>
-              <button onClick={() => setCurrentPage("tutorBookings")}>
+              <button type="button" onClick={() => setCurrentPage("tutorBookings")}>
                 View Requests
               </button>
             </div>
@@ -57,13 +66,12 @@ function HomePage({ setCurrentPage }) {
               <p>
                 See your planned sessions and upcoming tutoring schedule.
               </p>
-              <button onClick={() => setCurrentPage("tutorSchedule")}>
+              <button type="button" onClick={() => setCurrentPage("tutorSchedule")}>
                 View Schedule
               </button>
             </div>
-          </>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
