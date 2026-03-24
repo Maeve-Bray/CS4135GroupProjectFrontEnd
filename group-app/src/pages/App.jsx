@@ -7,6 +7,9 @@ import StudentBookings from "./StudentBookings";
 import TutorBookings from "./TutorBookings";
 import TutorSchedule from "./TutorSchedule";
 import TutorProfile from "./TutorProfile";
+import HomePage from "./HomePage";
+import AdminDashboard from "./AdminDashboard";
+
 import "./App.css";
 
 function App() {
@@ -16,64 +19,43 @@ function App() {
 
   if (auth) {
     const userId = auth.userId ?? 1;
-   
+
+    if (auth.role === "ADMIN") {
+      return (
+        <div className="app-shell">
+          <AdminDashboard logout={logout} />
+        </div>
+      );
+    }
 
     return (
-      <div className="app-container">
-        <div className="auth-card">
-          <h1>Welcome</h1>
-          <p><strong>Email:</strong> {auth.email}</p>
-          <p><strong>Role:</strong> {auth.role}</p>
-          <p><strong>Status:</strong> {auth.status}</p>
+      <div className="app-shell">
+        <HomePage setCurrentPage={setCurrentPage} />
 
-          <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-            {auth.role === "STUDENT" && (
-              <>
-                <button onClick={() => setCurrentPage("book")}>Book Session</button>
-                <button onClick={() => setCurrentPage("studentBookings")} style={{ marginLeft: "10px" }}>
-                  My Bookings
-                </button>
-              </>
-            )}
+        <div className="content-section">
+          {auth.role === "STUDENT" && currentPage === "book" && (
+            <BookSession studentId={userId} />
+          )}
 
-            {auth.role === "TUTOR" && (
-              <>
-                <button onClick={() => setCurrentPage("tutorBookings")}>Booking Requests</button>
-                <button onClick={() => setCurrentPage("tutorSchedule")} style={{ marginLeft: "10px" }}>
-                  My Schedule
-                </button>
-                 <button onClick={() => setCurrentPage("tutorProfile")} style={{ marginLeft: "10px" }}>
-                  My Profile
-                </button>
-              </>
-            )}
-          </div>
+          {auth.role === "STUDENT" && currentPage === "studentBookings" && (
+            <StudentBookings studentId={userId} />
+          )}
 
-          <div style={{ marginTop: "20px" }}>
-            {auth.role === "STUDENT" && currentPage === "book" && (
-              <BookSession studentId={userId} />
-            )}
+          {auth.role === "TUTOR" && currentPage === "tutorBookings" && (
+            <TutorBookings tutorId={userId} />
+          )}
 
-            {auth.role === "STUDENT" && currentPage === "studentBookings" && (
-              <StudentBookings studentId={userId} />
-            )}
+          {auth.role === "TUTOR" && currentPage === "tutorSchedule" && (
+            <TutorSchedule tutorId={userId} />
+          )}
+          
+          {auth.role === "TUTOR" && currentPage === "tutorProfile" && (
+            <TutorProfile tutorId={userId} />
+          )}
+        </div>
 
-            {auth.role === "TUTOR" && currentPage === "tutorBookings" && (
-              <TutorBookings tutorId={userId} />
-            )}
-
-            {auth.role === "TUTOR" && currentPage === "tutorSchedule" && (
-              <TutorSchedule tutorId={userId} />
-            )}
-
-            {auth.role === "TUTOR" && currentPage === "tutorProfile" && (
-              <TutorProfile tutorId={userId} />
-            )}
-          </div>
-
-          <button onClick={logout} style={{ marginTop: "20px" }}>
-            Logout
-          </button>
+        <div className="logout-row">
+          <button type="button" onClick={logout}>Logout</button>
         </div>
       </div>
     );
@@ -85,6 +67,7 @@ function App() {
 
       <button
         className="switch-button"
+        type="button"
         onClick={() => setShowRegister(!showRegister)}
       >
         {showRegister
