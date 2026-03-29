@@ -18,7 +18,24 @@ function App() {
   const [currentPage, setCurrentPage] = useState("home");
 
   if (auth) {
-    const userId = auth.userId ?? 1;
+    const userId = auth.userId;
+    const needsUserId = auth.role === "STUDENT" || auth.role === "TUTOR";
+    if (needsUserId && (userId == null || !Number.isFinite(userId))) {
+      return (
+        <div className="app-shell">
+          <div className="content-section">
+            <p className="error-text">
+              Your session does not include your account ID. Log out and log in
+              again (or re-register). Saving your profile or booking as another
+              user was prevented.
+            </p>
+            <button type="button" onClick={logout}>
+              Logout
+            </button>
+          </div>
+        </div>
+      );
+    }
 
     if (auth.role === "ADMIN") {
       return (
