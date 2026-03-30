@@ -4,6 +4,7 @@ import {
   getTutorBookings,
   rejectBooking,
 } from "../api/bookingAPI";
+import MessagingPage from "./MessagingPage";
 
 function ErrorModal({ message, onClose }) {
   if (!message) return null;
@@ -24,7 +25,7 @@ function ErrorModal({ message, onClose }) {
 export default function TutorBookings({ tutorId }) {
   const [bookings, setBookings] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-
+  const [activeChat, setActiveChat] = useState(null);
 
   const loadBookings = async () => {
     try {
@@ -85,8 +86,19 @@ export default function TutorBookings({ tutorId }) {
             {booking.status === "PENDING" && (
               <>
                 <button onClick={() => handleApprove(booking.id)}>Approve</button>
-                <button onClick={() => handleReject(booking.id)}>Reject</button>
+                <button onClick={() => handleReject(booking.id)} style={{marginLeft:"10px"}}>Reject</button>
               </>
+            )}
+            {booking.status === "CONFIRMED" && (
+              <button
+                onClick={() => setActiveChat(activeChat?.id === booking.id ? null : booking)}
+                style={{marginLeft:"10px"}}
+              >
+                {activeChat?.id === booking.id ? "Close Chat" : "Message Student"}
+              </button>
+            )}
+            {activeChat?.id === booking.id && (
+              <MessagingPage booking={booking} currentUserId={tutorId} />
             )}
             <hr />
           </div>
