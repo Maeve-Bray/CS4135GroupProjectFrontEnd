@@ -38,11 +38,7 @@ function App() {
     }
 
     if (auth.role === "ADMIN") {
-      return (
-        <div className="app-shell">
-          <AdminDashboard logout={logout} />
-        </div>
-      );
+      return <AdminDashboard logout={logout} />;
     }
 
     return (

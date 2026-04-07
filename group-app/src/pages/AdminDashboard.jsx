@@ -3,47 +3,61 @@ import { useAuth } from "../context/useAuth";
 import ReportsPanel from "../components/ReportsPanel";
 import BlockedContentPanel from "../components/BlockedContentPanel";
 
+const NAV_ITEMS = [
+  { key: "reports",  label: "Reports",         icon: "🚩" },
+  { key: "blocked",  label: "Blocked Content",  icon: "🚫" },
+];
+
 function AdminDashboard({ logout }) {
   const { auth } = useAuth();
   const [activeTab, setActiveTab] = useState("reports");
 
   return (
-    <div className="dashboard-container">
-      <div className="hero-card admin-hero">
-        <h1>Admin Dashboard</h1>
-        <p>
-          Welcome, <strong>{auth.email}</strong>
-        </p>
-        <p>
-          Role: <strong>{auth.role}</strong> | Status: <strong>{auth.status}</strong>
-        </p>
-      </div>
+    <div className="admin-shell">
 
-      <div className="admin-tabs">
-        <button
-          className={activeTab === "reports" ? "tab-active" : ""}
-          onClick={() => setActiveTab("reports")}
-        >
-          Reports
+      {/* ── Sidebar ── */}
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar__avatar">
+          <div className="admin-avatar-circle">
+            {auth.email?.[0]?.toUpperCase() ?? "A"}
+          </div>
+          <span className="admin-sidebar__email">{auth.email}</span>
+        </div>
+
+        <nav className="admin-sidebar__nav">
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.key}
+              className={`admin-nav-item${activeTab === item.key ? " admin-nav-item--active" : ""}`}
+              onClick={() => setActiveTab(item.key)}
+            >
+              <span className="admin-nav-item__icon">{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        <button className="admin-sidebar__logout" onClick={logout}>
+          Log out
         </button>
-        <button
-          className={activeTab === "blocked" ? "tab-active" : ""}
-          onClick={() => setActiveTab("blocked")}
-        >
-          Blocked Content
-        </button>
-      </div>
+      </aside>
 
-      {activeTab === "reports" && (
-        <ReportsPanel token={auth.token} adminId={auth.userId} />
-      )}
-      {activeTab === "blocked" && (
-        <BlockedContentPanel token={auth.token} adminId={auth.userId} />
-      )}
+      {/* ── Main content ── */}
+      <main className="admin-main">
+        <header className="admin-header">
+          <h1 className="admin-header__title">ShareCraft</h1>
+        </header>
 
-      <div className="logout-row">
-        <button onClick={logout}>Logout</button>
-      </div>
+        <div className="admin-content">
+          {activeTab === "reports" && (
+            <ReportsPanel token={auth.token} adminId={auth.userId} />
+          )}
+          {activeTab === "blocked" && (
+            <BlockedContentPanel token={auth.token} adminId={auth.userId} />
+          )}
+        </div>
+      </main>
+
     </div>
   );
 }
