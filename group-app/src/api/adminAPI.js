@@ -14,7 +14,18 @@ async function handleResponse(res) {
   return data;
 }
 
-// --- Reports ---
+// --- Submit a report (any logged-in user) ---
+
+export async function submitReport(token, { reportedByUserId, contentType, contentId, reason }) {
+  const res = await fetch("http://localhost:8080/api/reports", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reportedByUserId, contentType, contentId, reason }),
+  });
+  return handleResponse(res);
+}
+
+// --- Reports (admin) ---
 
 export async function getReports(token, { status, contentType } = {}) {
   const params = new URLSearchParams();
