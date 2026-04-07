@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { registerUser } from "../api/authAPI";
 import { useAuth } from "../context/useAuth";
+import "../styles/style.css";
 
-export default function RegisterPage() {
+export default function RegisterPage({ onShowLogin }) {
   const { login } = useAuth();
 
   const [form, setForm] = useState({
@@ -12,52 +13,108 @@ export default function RegisterPage() {
   });
 
   const [error, setError] = useState("");
+  const [emailExists, setEmailExists] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setEmailExists(false);
 
     try {
       const data = await registerUser(form);
       login(data);
     } catch (err) {
-      setError(err.message);
+      const message = err.message || "Registration failed";
+      setError(message);
+
+      if (
+        message.toLowerCase().includes("already exists") ||
+        message.toLowerCase().includes("email exists") ||
+        message.toLowerCase().includes("duplicate")
+      ) {
+        setEmailExists(true);
+      }
     }
   };
 
   return (
-    <div className="auth-card">
-      <h2>Register</h2>
+    <main className="log-in">
+      <section className="log-in-modal" aria-label="Register form card">
+        <p className="p">Enter your details to register for</p>
+        <h1 className="text-wrapper">ShareCraft</h1>
 
-      <form onSubmit={handleSubmit} className="auth-form">
-        <input
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          required
-        />
+        <form className="log-in-form" onSubmit={handleSubmit}>
+          <div className="field-group">
+            <label htmlFor="email" className="div">
+              Email:
+            </label>
+            <input
+              id="email"
+              type="email"
+              className="input-field"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              placeholder="JaneDoe@gmail.com"
+              autoComplete="email"
+              required
+            />
+          </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          required
-        />
+          <div className="field-group">
+            <label htmlFor="password" className="text-wrapper-2">
+              Password:
+            </label>
+            <input
+              id="password"
+              type="password"
+              className="input-field"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              placeholder="JaneDoe123"
+              autoComplete="new-password"
+              required
+            />
+          </div>
 
-        <select
-          value={form.role}
-          onChange={(e) => setForm({ ...form, role: e.target.value })}
-        >
-          <option value="STUDENT">Student</option>
-          <option value="TUTOR">Tutor</option>
-        </select>
+          <div className="field-group">
+            <div className="select-wrapper">
+              <select
+                id="role"
+                className="input-field select-field"
+                value={form.role}
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
+              >
+                <option value="STUDENT">Student</option>
+                <option value="TUTOR">Tutor</option>
+              </select>
+              <span className="select-arrow" aria-hidden="true">
+                ▼
+              </span>
+            </div>
+          </div>
 
-        <button type="submit">Register</button>
-      </form>
+          <div className="group">
+            <button type="submit" className="overlap-group">
+              <span className="text-wrapper-6">register</span>
+            </button>
+          </div>
+        </form>
 
-      {error && <p className="error-text">{error}</p>}
-    </div>
+        {error && <p className="error-text">{error}</p>}
+
+        {emailExists && (
+          <p className="no-account-register">
+            <span className="span">Already have an account? </span>
+            <button
+              type="button"
+              className="text-wrapper-5 switch-link"
+              onClick={onShowLogin}
+            >
+              Log in instead
+            </button>
+          </p>
+        )}
+      </section>
+    </main>
   );
 }
