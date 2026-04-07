@@ -80,17 +80,11 @@ function App() {
 
   return (
     <div className="app-container">
-      {showRegister ? <RegisterPage /> : <LoginPage />}
-
-      <button
-        className="switch-button"
-        type="button"
-        onClick={() => setShowRegister(!showRegister)}
-      >
-        {showRegister
-          ? "Already have an account? Login"
-          : "Need an account? Register"}
-      </button>
+      {showRegister ? (
+  <RegisterPage onShowLogin={() => setShowRegister(false)} />
+) : (
+  <LoginPage onShowRegister={() => setShowRegister(true)} />
+)}
     </div>
   );
 }
