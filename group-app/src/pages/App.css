@@ -464,3 +464,165 @@ body {
 .tutor-profile-skill-block > button[type="button"]:hover {
   background: #d1d5db;
 }
+
+/* ---- Admin Dashboard ---- */
+
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-tabs button {
+  background: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.admin-tabs button.tab-active,
+.admin-tabs button:hover {
+  background: #2563eb;
+  color: white;
+}
+
+.admin-panel {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+.admin-panel h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.admin-filters label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.admin-filters select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+.admin-filters button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.admin-filters button:hover {
+  background: #1d4ed8;
+}
+
+.admin-error {
+  color: #b91c1c;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: top;
+}
+
+.admin-table th {
+  background: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.admin-table tr:hover td {
+  background: #f9fafb;
+}
+
+.report-reason {
+  max-width: 220px;
+  word-break: break-word;
+}
+
+.notes-input {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 13px;
+  width: 140px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 120px;
+}
+
+.action-buttons button {
+  border: none;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-review  { background: #d1fae5; color: #065f46; }
+.btn-review:hover  { background: #a7f3d0; }
+.btn-review:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+
+.btn-dismiss { background: #fef3c7; color: #92400e; }
+.btn-dismiss:hover { background: #fde68a; }
+.btn-dismiss:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+
+.btn-block   { background: #fee2e2; color: #991b1b; }
+.btn-block:hover   { background: #fca5a5; }
+
+.btn-unblock { background: #dbeafe; color: #1e40af; }
+.btn-unblock:hover { background: #bfdbfe; }
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.status-badge.status-open      { background: #fee2e2; color: #991b1b; }
+.status-badge.status-reviewed  { background: #d1fae5; color: #065f46; }
+.status-badge.status-dismissed { background: #e5e7eb; color: #6b7280; }
