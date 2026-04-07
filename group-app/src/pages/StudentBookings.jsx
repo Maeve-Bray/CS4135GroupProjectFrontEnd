@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
 import {cancelBooking,getStudentBookings} from "../api/bookingAPI";
 import MessagingPage from "./MessagingPage";
+import ReportModal from "../components/ReportModal";
 
 function ErrorModal({ message, onClose }) {
   if (!message) return null;
@@ -83,6 +84,13 @@ export default function StudentBookings({studentId}){
                             {activeChat?.id===booking.id&&(
                                 <MessagingPage booking={booking} currentUserId={studentId} />
                             )}
+                            <div style={{marginTop:"8px"}}>
+                                <ReportModal
+                                    contentType="BOOKING"
+                                    contentId={booking.id}
+                                    label="Report Booking"
+                                />
+                            </div>
                             <hr />
                         </div>
                     ))

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createThread, getThreadByBooking, sendMessage, getMessages } from "../api/messagingAPI";
+import ReportModal from "../components/ReportModal";
 
 function formatTime(sentAt) {
   if (!sentAt) return "";
@@ -77,14 +78,27 @@ export default function MessagingPage({ booking, currentUserId }) {
               <div
                 key={msg.messageId}
                 style={{
-                  ...styles.bubble,
-                  alignSelf: isMine ? "flex-end" : "flex-start",
-                  backgroundColor: isMine ? "#4f46e5" : "#e5e7eb",
-                  color: isMine ? "#fff" : "#111",
+                  ...styles.bubbleWrapper,
+                  alignItems: isMine ? "flex-end" : "flex-start",
                 }}
               >
-                <p style={styles.bubbleText}>{msg.content}</p>
-                <span style={styles.timestamp}>{formatTime(msg.sentAt)}</span>
+                <div
+                  style={{
+                    ...styles.bubble,
+                    backgroundColor: isMine ? "#4f46e5" : "#e5e7eb",
+                    color: isMine ? "#fff" : "#111",
+                  }}
+                >
+                  <p style={styles.bubbleText}>{msg.content}</p>
+                  <span style={styles.timestamp}>{formatTime(msg.sentAt)}</span>
+                </div>
+                {!isMine && (
+                  <ReportModal
+                    contentType="MESSAGE"
+                    contentId={msg.messageId}
+                    label="Report"
+                  />
+                )}
               </div>
             );
           })
@@ -131,6 +145,11 @@ const styles = {
     backgroundColor: "#f9fafb",
     borderRadius: "8px",
     marginBottom: "12px",
+  },
+  bubbleWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
   },
   bubble: {
     maxWidth: "70%",
