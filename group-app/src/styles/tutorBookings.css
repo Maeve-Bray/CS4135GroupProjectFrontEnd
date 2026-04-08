@@ -1,0 +1,355 @@
+.tb-page {
+  padding: 20px;
+}
+
+.tb-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.tb-heading {
+  margin: 0;
+}
+
+.tb-subheading {
+  margin: 6px 0 0;
+  color: #666;
+}
+
+.tb-month-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tb-month-button {
+  border: 1px solid #d0d7de;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.tb-month-button:hover {
+  background: #f8fafc;
+}
+
+.tb-month-label {
+  min-width: 180px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.tb-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 2fr) minmax(300px, 1fr);
+  gap: 20px;
+}
+
+.tb-calendar-card,
+.tb-details-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.tb-details-card {
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.tb-week-header-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.tb-week-header-cell {
+  text-align: center;
+  font-weight: 700;
+  color: #556;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.tb-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.tb-day-cell {
+  min-height: 100px;
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.tb-day-cell:hover {
+  background: #f8fafc;
+}
+
+.tb-day-cell-selected {
+  background-color: #f4f8ff;
+  border: 2px solid #1976d2;
+}
+
+.tb-day-cell-today {
+  border: 2px solid #1976d2;
+}
+
+.tb-day-cell-outside-month {
+  opacity: 0.45;
+}
+
+.tb-day-cell-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tb-day-number {
+  font-size: 15px;
+  color: #223;
+  font-weight: 500;
+}
+
+.tb-day-number-active {
+  font-weight: 700;
+}
+
+.tb-day-info {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tb-session-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.tb-badge-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tb-confirmed-mini-badge,
+.tb-pending-mini-badge {
+  display: inline-block;
+  width: fit-content;
+  font-size: 11px;
+  padding: 3px 7px;
+  border-radius: 999px;
+}
+
+.tb-confirmed-mini-badge {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.tb-pending-mini-badge {
+  background-color: #fff8e1;
+  color: #b26a00;
+}
+
+.tb-chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tb-chat-title {
+  margin: 0;
+}
+
+.tb-chat-subtitle {
+  margin: 6px 0 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.tb-close-chat-top-button {
+  padding: 10px 14px;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  background-color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tb-close-chat-top-button:hover {
+  background: #f8fafc;
+}
+
+.tb-full-panel-chat {
+  min-height: 500px;
+}
+
+.tb-details-title {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.tb-empty-text {
+  color: #666;
+}
+
+.tb-booking-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: #fafafa;
+}
+
+.tb-booking-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.tb-booking-line {
+  margin: 0 0 8px;
+}
+
+.tb-status-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tb-status-confirmed {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.tb-status-pending {
+  background-color: #fff8e1;
+  color: #b26a00;
+}
+
+.tb-status-rejected {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.tb-status-default {
+  background-color: #eceff1;
+  color: #455a64;
+}
+
+.tb-action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.tb-approve-button,
+.tb-reject-button,
+.tb-message-button,
+.tb-modal-button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.tb-approve-button {
+  background-color: #2e7d32;
+}
+
+.tb-reject-button,
+.tb-modal-button {
+  background-color: #c62828;
+}
+
+.tb-message-button {
+  background-color: #1976d2;
+}
+
+.tb-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.tb-modal {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.tb-modal-title {
+  margin-bottom: 12px;
+  color: #d32f2f;
+}
+
+.tb-modal-message {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+@media (max-width: 900px) {
+  .tb-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tb-details-card {
+    max-height: none;
+  }
+
+  .tb-month-label {
+    min-width: auto;
+  }
+}
+.brand-title {
+  margin: 0 0 40px;
+  text-align: right;
+  color: #697f65;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1;
+}
