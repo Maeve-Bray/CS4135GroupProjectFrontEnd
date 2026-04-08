@@ -2,15 +2,17 @@ import { useState } from "react";
 import { useAuth } from "../context/useAuth";
 import ReportsPanel from "../components/ReportsPanel";
 import BlockedContentPanel from "../components/BlockedContentPanel";
+import ReportCharts from "../components/ReportCharts";
 
 const NAV_ITEMS = [
+  { key: "overview", label: "Overview",        icon: "📊" },
   { key: "reports",  label: "Reports",         icon: "🚩" },
   { key: "blocked",  label: "Blocked Content",  icon: "🚫" },
 ];
 
 function AdminDashboard({ logout }) {
   const { auth } = useAuth();
-  const [activeTab, setActiveTab] = useState("reports");
+  const [activeTab, setActiveTab] = useState("overview");
 
   return (
     <div className="admin-shell">
@@ -49,6 +51,9 @@ function AdminDashboard({ logout }) {
         </header>
 
         <div className="admin-content">
+          {activeTab === "overview" && (
+            <ReportCharts token={auth.token} />
+          )}
           {activeTab === "reports" && (
             <ReportsPanel token={auth.token} adminId={auth.userId} />
           )}

@@ -740,3 +740,26 @@ body {
 .status-badge.status-open      { background: #fee2e2; color: #991b1b; }
 .status-badge.status-reviewed  { background: #d1fae5; color: #065f46; }
 .status-badge.status-dismissed { background: #e5e7eb; color: #6b7280; }
+
+/* ---- Report Charts ---- */
+
+.report-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.report-chart-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.report-chart-title {
+  margin: 0 0 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
