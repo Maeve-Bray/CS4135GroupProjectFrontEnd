@@ -38,10 +38,10 @@ export async function getReports(token, { status, contentType } = {}) {
   return handleResponse(res);
 }
 
-export async function reviewReport(token, reportId, adminId, notes = "") {
+export async function blockReport(token, reportId, adminId, notes = "") {
   const params = new URLSearchParams({ adminId, notes });
-  const res = await fetch(`${API_BASE}/reports/${reportId}/review?${params}`, {
-    method: "PATCH",
+  const res = await fetch(`${API_BASE}/reports/${reportId}/block?${params}`, {
+    method: "POST",
     headers: authHeaders(token),
   });
   return handleResponse(res);
@@ -87,15 +87,6 @@ export async function getReportedTutorProfile(token, tutorId) {
 }
 
 // --- Blocked Content ---
-
-export async function blockContent(token, { contentType, contentId, adminId, reason = "" }) {
-  const params = new URLSearchParams({ contentType, contentId, adminId, reason });
-  const res = await fetch(`${API_BASE}/block?${params}`, {
-    method: "POST",
-    headers: authHeaders(token),
-  });
-  return handleResponse(res);
-}
 
 export async function unblockContent(token, { contentType, contentId, adminId, reason = "" }) {
   const params = new URLSearchParams({ contentType, contentId, adminId, reason });

@@ -213,7 +213,7 @@ export default function MessagingPage({ booking, currentUserId }) {
                 <p>Start the conversation here.</p>
               </div>
             ) : (
-              messages.map((msg) => {
+              messages.filter((msg) => !msg.blocked).map((msg) => {
                 const isMine =
                   String(msg.senderId) === String(currentUserId);
 

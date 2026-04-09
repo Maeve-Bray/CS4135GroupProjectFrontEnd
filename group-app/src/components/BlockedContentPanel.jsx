@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getBlockedContent, unblockContent } from "../api/adminAPI";
+import { getBlockedContent } from "../api/adminAPI";
 
 const CONTENT_TYPES = ["USER", "MESSAGE", "BOOKING", "TUTOR_PROFILE"];
 
@@ -13,7 +13,6 @@ function BlockedContentPanel({ token, adminId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [typeFilter, setTypeFilter] = useState("");
-  const [actionError, setActionError] = useState(null);
 
   const fetchBlocked = useCallback(async () => {
     setLoading(true);
@@ -32,21 +31,6 @@ function BlockedContentPanel({ token, adminId }) {
     fetchBlocked();
   }, [fetchBlocked]);
 
-  async function handleUnblock(item) {
-    setActionError(null);
-    try {
-      await unblockContent(token, {
-        contentType: item.contentType,
-        contentId: item.contentId,
-        adminId,
-        reason: "Unblocked by admin",
-      });
-      setBlocked((prev) => prev.filter((b) => b.id !== item.id));
-    } catch (e) {
-      setActionError(e.message);
-    }
-  }
-
   return (
     <div className="admin-panel">
       <h2>Blocked Content</h2>
@@ -64,7 +48,6 @@ function BlockedContentPanel({ token, adminId }) {
         <button onClick={fetchBlocked}>Refresh</button>
       </div>
 
-      {actionError && <p className="admin-error">{actionError}</p>}
       {error && <p className="admin-error">Failed to load blocked content: {error}</p>}
       {loading && <p>Loading blocked content...</p>}
 
@@ -82,7 +65,6 @@ function BlockedContentPanel({ token, adminId }) {
               <th>Blocked By (Admin ID)</th>
               <th>Reason</th>
               <th>Blocked At</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -94,11 +76,6 @@ function BlockedContentPanel({ token, adminId }) {
                 <td>{item.blockedByAdminId}</td>
                 <td>{item.reason}</td>
                 <td>{formatDate(item.blockedAt)}</td>
-                <td>
-                  <button onClick={() => handleUnblock(item)} className="btn-unblock">
-                    Unblock
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>
