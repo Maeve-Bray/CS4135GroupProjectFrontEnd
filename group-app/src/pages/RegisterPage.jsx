@@ -10,6 +10,7 @@ export default function RegisterPage({ onShowLogin }) {
     email: "",
     password: "",
     role: "STUDENT",
+    adminCode: "",
   });
 
   const [error, setError] = useState("");
@@ -86,12 +87,30 @@ export default function RegisterPage({ onShowLogin }) {
               >
                 <option value="STUDENT">Student</option>
                 <option value="TUTOR">Tutor</option>
+                <option value="ADMIN">Admin</option>
               </select>
               <span className="select-arrow" aria-hidden="true">
                 ▼
               </span>
             </div>
           </div>
+
+          {form.role === "ADMIN" && (
+            <div className="field-group">
+              <label htmlFor="adminCode" className="div">
+                Admin Code:
+              </label>
+              <input
+                id="adminCode"
+                type="password"
+                className="input-field"
+                value={form.adminCode}
+                onChange={(e) => setForm({ ...form, adminCode: e.target.value })}
+                placeholder="Enter admin secret code"
+                required
+              />
+            </div>
+          )}
 
           <div className="group">
             <button type="submit" className="overlap-group">

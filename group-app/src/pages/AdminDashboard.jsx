@@ -1,53 +1,68 @@
+import { useState } from "react";
 import { useAuth } from "../context/useAuth";
+import ReportsPanel from "../components/ReportsPanel";
+import BlockedContentPanel from "../components/BlockedContentPanel";
+import ReportCharts from "../components/ReportCharts";
+
+const NAV_ITEMS = [
+  { key: "overview", label: "Overview",        icon: "📊" },
+  { key: "reports",  label: "Reports",         icon: "🚩" },
+  { key: "blocked",  label: "Blocked Content",  icon: "🚫" },
+];
 
 function AdminDashboard({ logout }) {
   const { auth } = useAuth();
+  const [activeTab, setActiveTab] = useState("overview");
 
   return (
-    <div className="dashboard-container">
-      <div className="hero-card admin-hero">
-        <h1>Admin Dashboard</h1>
-        <p>
-          Welcome, <strong>{auth.email}</strong>
-        </p>
-        <p>
-          Role: <strong>{auth.role}</strong> | Status: <strong>{auth.status}</strong>
-        </p>
-      </div>
+    <div className="admin-shell">
 
-      <div className="dashboard-grid">
-        <div className="dashboard-card">
-          <h2>Manage Users</h2>
-          <p>
-            View users, update roles, and manage account access across the platform.
-          </p>
+      {/* ── Sidebar ── */}
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar__avatar">
+          <div className="admin-avatar-circle">
+            {auth.email?.[0]?.toUpperCase() ?? "A"}
+          </div>
+          <span className="admin-sidebar__email">{auth.email}</span>
         </div>
 
-        <div className="dashboard-card">
-          <h2>Review Reports</h2>
-          <p>
-            Inspect reported issues and review flagged activity submitted by users.
-          </p>
-        </div>
+        <nav className="admin-sidebar__nav">
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.key}
+              className={`admin-nav-item${activeTab === item.key ? " admin-nav-item--active" : ""}`}
+              onClick={() => setActiveTab(item.key)}
+            >
+              <span className="admin-nav-item__icon">{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+        </nav>
 
-        <div className="dashboard-card">
-          <h2>Monitor Platform Activity</h2>
-          <p>
-            Keep track of registrations, sessions, and general platform usage.
-          </p>
-        </div>
+        <button className="admin-sidebar__logout" onClick={logout}>
+          Log out
+        </button>
+      </aside>
 
-        <div className="dashboard-card">
-          <h2>View All Bookings</h2>
-          <p>
-            Access and monitor all booking activity taking place on the system.
-          </p>
-        </div>
-      </div>
+      {/* ── Main content ── */}
+      <main className="admin-main">
+        <header className="admin-header">
+          <h1 className="admin-header__title">ShareCraft</h1>
+        </header>
 
-      <div className="logout-row">
-        <button onClick={logout}>Logout</button>
-      </div>
+        <div className="admin-content">
+          {activeTab === "overview" && (
+            <ReportCharts token={auth.token} />
+          )}
+          {activeTab === "reports" && (
+            <ReportsPanel token={auth.token} adminId={auth.userId} />
+          )}
+          {activeTab === "blocked" && (
+            <BlockedContentPanel token={auth.token} adminId={auth.userId} />
+          )}
+        </div>
+      </main>
+
     </div>
   );
 }

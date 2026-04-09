@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { cancelBooking, getStudentBookings } from "../api/bookingAPI";
 import MessagingPage from "./MessagingPage";
-import { useAuth } from "../context/useAuth";
+import ReportModal from "../components/ReportModal";
 import "../styles/tutorBookings.css";
 
 function ErrorModal({ message, onClose }) {
@@ -109,8 +109,6 @@ export default function StudentBookings({ studentId }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarInitialized, setCalendarInitialized] = useState(false);
 
-  const { auth } = useAuth();
-
   const loadBookings = async () => {
     try {
       const response = await getStudentBookings(studentId);
@@ -217,7 +215,9 @@ export default function StudentBookings({ studentId }) {
             Click a date to view that day&apos;s sessions.
           </p>
         </div>
-<h1 className="brand-title">ShareCraft</h1>
+
+        <h1 className="brand-title">ShareCraft</h1>
+
         <div className="tb-month-controls">
           <button className="tb-month-button" onClick={goToPreviousMonth}>
             ←
@@ -254,7 +254,6 @@ export default function StudentBookings({ studentId }) {
                 <MessagingPage
                   booking={activeChat}
                   currentUserId={studentId}
-                  authEmail={auth?.email}
                 />
               </div>
             </>
@@ -398,6 +397,14 @@ export default function StudentBookings({ studentId }) {
                     </button>
                   </div>
                 )}
+
+                <div className="tb-action-row">
+                  <ReportModal
+                    contentType="BOOKING"
+                    contentId={booking.id}
+                    label="Report Booking"
+                  />
+                </div>
               </div>
             ))
           )}

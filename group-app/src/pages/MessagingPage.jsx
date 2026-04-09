@@ -6,6 +6,7 @@ import {
   getMessages,
 } from "../api/messagingAPI";
 import { getMyProfile } from "../api/authAPI";
+import ReportModal from "../components/ReportModal";
 import "../styles/messaging.css";
 
 function toDate(value) {
@@ -59,7 +60,7 @@ function resolveName(user) {
   );
 }
 
-export default function MessagingPage({ booking, currentUserId, authEmail, auth }) {
+export default function MessagingPage({ booking, currentUserId }) {
   const [thread, setThread] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -83,8 +84,13 @@ export default function MessagingPage({ booking, currentUserId, authEmail, auth 
       try {
         const existing = await getThreadByBooking(booking.id);
         setThread(existing);
-        const msgs = await getMessages(existing.threadId);
-        setMessages(msgs);
+
+        if (existing?.threadId) {
+          const msgs = await getMessages(existing.threadId);
+          setMessages(msgs || []);
+        } else {
+          setMessages([]);
+        }
       } catch {
         try {
           const created = await createThread(booking.id);
@@ -100,8 +106,10 @@ export default function MessagingPage({ booking, currentUserId, authEmail, auth 
 
     if (booking?.id) {
       loadThread();
+    } else {
+      setLoading(false);
     }
-  }, [booking]);
+  }, [booking?.id]);
 
   useEffect(() => {
     async function loadPartnerName() {
@@ -112,7 +120,7 @@ export default function MessagingPage({ booking, currentUserId, authEmail, auth 
 
       try {
         const res = await getMyProfile(partnerUserId);
-        setChatPartnerName(resolveName(res.data));
+        setChatPartnerName(resolveName(res?.data));
       } catch (err) {
         console.error("Error loading chat partner name", err);
         setChatPartnerName(isStudentView ? "Tutor" : "Student");
@@ -130,14 +138,14 @@ export default function MessagingPage({ booking, currentUserId, authEmail, auth 
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !thread) return;
+    if (!newMessage.trim() || !thread?.threadId) return;
 
     setError("");
     try {
       await sendMessage(thread.threadId, currentUserId, newMessage.trim());
       setNewMessage("");
       const updated = await getMessages(thread.threadId);
-      setMessages(updated);
+      setMessages(updated || []);
     } catch (err) {
       setError(err.message || "Failed to send message.");
     }
@@ -146,6 +154,8 @@ export default function MessagingPage({ booking, currentUserId, authEmail, auth 
   const chatPartnerAvatar = isStudentView
     ? booking?.tutorAvatarUrl
     : booking?.studentAvatarUrl;
+
+  const fallbackPartnerName = isStudentView ? "Tutor" : "Student";
 
   const chatDate = formatDisplayDate(
     messages[0]?.sentAt || booking?.sessionDate || new Date()
@@ -170,17 +180,15 @@ export default function MessagingPage({ booking, currentUserId, authEmail, auth 
               {chatPartnerAvatar ? (
                 <img
                   src={chatPartnerAvatar}
-                  alt={chatPartnerName || (isStudentView ? "Tutor" : "Student")}
+                  alt={chatPartnerName || fallbackPartnerName}
                 />
               ) : (
-                <span>
-                  {getInitials(chatPartnerName || (isStudentView ? "Tutor" : "Student"))}
-                </span>
+                <span>{getInitials(chatPartnerName || fallbackPartnerName)}</span>
               )}
             </div>
 
             <div className="messaging-header__meta">
-              <h2>{chatPartnerName || (isStudentView ? "Tutor" : "Student")}</h2>
+              <h2>{chatPartnerName || fallbackPartnerName}</h2>
             </div>
           </div>
         </header>
@@ -226,6 +234,14 @@ export default function MessagingPage({ booking, currentUserId, authEmail, auth 
                       <p>{msg.content}</p>
                       <span>{formatTime(msg.sentAt)}</span>
                     </div>
+
+                    {!isMine && (
+                      <ReportModal
+                        contentType="MESSAGE"
+                        contentId={msg.messageId}
+                        label="Report"
+                      />
+                    )}
                   </div>
                 );
               })
