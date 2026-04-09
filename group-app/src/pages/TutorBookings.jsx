@@ -5,6 +5,7 @@ import {
   rejectBooking,
 } from "../api/bookingAPI";
 import MessagingPage from "./MessagingPage";
+import ReportModal from "../components/ReportModal";
 
 function ErrorModal({ message, onClose }) {
   if (!message) return null;
@@ -100,6 +101,13 @@ export default function TutorBookings({ tutorId }) {
             {activeChat?.id === booking.id && (
               <MessagingPage booking={booking} currentUserId={tutorId} />
             )}
+            <div style={{marginTop:"8px"}}>
+              <ReportModal
+                contentType="USER"
+                contentId={booking.studentId}
+                label="Report Student"
+              />
+            </div>
             <hr />
           </div>
         ))
