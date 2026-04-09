@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { cancelBooking, getStudentBookings } from "../api/bookingAPI";
+import { getMyProfile } from "../api/authAPI";
 import MessagingPage from "./MessagingPage";
 import ReportModal from "../components/ReportModal";
 import "../styles/tutorBookings.css";
@@ -101,8 +102,18 @@ function getStatusClass(status) {
   }
 }
 
+function resolveName(user) {
+  return (
+    user?.name ||
+    user?.fullName ||
+    user?.email?.split("@")[0] ||
+    "Tutor"
+  );
+}
+
 export default function StudentBookings({ studentId }) {
   const [bookings, setBookings] = useState([]);
+  const [tutorNames, setTutorNames] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [activeChat, setActiveChat] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -125,6 +136,45 @@ export default function StudentBookings({ studentId }) {
       loadBookings();
     }
   }, [studentId]);
+
+  useEffect(() => {
+    async function loadTutorNames() {
+      const uniqueTutorIds = [
+        ...new Set(bookings.map((booking) => booking.tutorId).filter(Boolean)),
+      ];
+
+      const missingIds = uniqueTutorIds.filter(
+        (tutorId) => !tutorNames[tutorId]
+      );
+
+      if (missingIds.length === 0) return;
+
+      try {
+        const results = await Promise.all(
+          missingIds.map(async (tutorId) => {
+            try {
+              const res = await getMyProfile(tutorId);
+              return [tutorId, resolveName(res?.data)];
+            } catch (err) {
+              console.error(`Error loading tutor name for ${tutorId}`, err);
+              return [tutorId, "Tutor"];
+            }
+          })
+        );
+
+        setTutorNames((prev) => ({
+          ...prev,
+          ...Object.fromEntries(results),
+        }));
+      } catch (error) {
+        console.error("Error loading tutor names", error);
+      }
+    }
+
+    if (bookings.length > 0) {
+      loadTutorNames();
+    }
+  }, [bookings, tutorNames]);
 
   const bookingsByDate = useMemo(() => {
     const grouped = {};
@@ -235,7 +285,9 @@ export default function StudentBookings({ studentId }) {
             <>
               <div className="tb-chat-header">
                 <div>
-                  <h3 className="tb-chat-title">Message Tutor</h3>
+                  <h3 className="tb-chat-title">
+                    Message {tutorNames[activeChat.tutorId] || "Tutor"}
+                  </h3>
                   <p className="tb-chat-subtitle">
                     Booking on {activeChat.sessionDate} • {activeChat.startTime} -{" "}
                     {activeChat.endTime}
@@ -251,10 +303,7 @@ export default function StudentBookings({ studentId }) {
               </div>
 
               <div className="tb-full-panel-chat">
-                <MessagingPage
-                  booking={activeChat}
-                  currentUserId={studentId}
-                />
+                <MessagingPage booking={activeChat} currentUserId={studentId} />
               </div>
             </>
           ) : (
@@ -358,7 +407,8 @@ export default function StudentBookings({ studentId }) {
                   <div>
                     {booking.tutorId && (
                       <p className="tb-booking-line">
-                        <strong>Tutor:</strong> {booking.tutorId}
+                        <strong>Tutor:</strong>{" "}
+                        {tutorNames[booking.tutorId] || "Tutor"}
                       </p>
                     )}
                     <p className="tb-booking-line">
