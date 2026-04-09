@@ -738,8 +738,48 @@ body {
 }
 
 .status-badge.status-open      { background: #fee2e2; color: #991b1b; }
-.status-badge.status-reviewed  { background: #d1fae5; color: #065f46; }
+.status-badge.status-closed    { background: #d1fae5; color: #065f46; }
 .status-badge.status-dismissed { background: #e5e7eb; color: #6b7280; }
+
+.btn-view-content {
+  background: #ede9fe;
+  color: #6d28d9;
+  border: none;
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.btn-view-content:hover  { background: #ddd6fe; }
+.btn-view-content:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.content-preview-wrapper {
+  margin-top: 8px;
+}
+
+.content-preview {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.content-preview p {
+  margin: 4px 0;
+  color: #374151;
+  word-break: break-word;
+}
+
+.content-preview-error {
+  color: #b91c1c;
+  font-size: 0.82rem;
+}
 
 /* ---- Report Charts ---- */
 

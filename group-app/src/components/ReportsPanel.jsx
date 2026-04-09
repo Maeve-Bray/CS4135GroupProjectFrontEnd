@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { getReports, reviewReport, dismissReport, blockContent } from "../api/adminAPI";
+import ReportedContentPreview from "./ReportedContentPreview";
 
 const CONTENT_TYPES = ["USER", "MESSAGE", "BOOKING", "TUTOR_PROFILE"];
-const REPORT_STATUSES = ["OPEN", "REVIEWED", "DISMISSED"];
+const REPORT_STATUSES = ["OPEN", "CLOSED", "DISMISSED"];
 
 function formatDate(iso) {
   if (!iso) return "-";
@@ -120,6 +121,7 @@ function ReportsPanel({ token, adminId }) {
               <th>Content Type</th>
               <th>Content ID</th>
               <th>Reason</th>
+              <th>Reported Content</th>
               <th>Status</th>
               <th>Reported At</th>
               <th>Notes</th>
@@ -134,6 +136,13 @@ function ReportsPanel({ token, adminId }) {
                 <td>{report.contentType}</td>
                 <td>{report.contentId}</td>
                 <td className="report-reason">{report.reason}</td>
+                <td>
+                  <ReportedContentPreview
+                    token={token}
+                    contentType={report.contentType}
+                    contentId={report.contentId}
+                  />
+                </td>
                 <td>
                   <span className={`status-badge status-${report.status.toLowerCase()}`}>
                     {report.status}
@@ -152,20 +161,21 @@ function ReportsPanel({ token, adminId }) {
                 <td className="action-buttons">
                   <button
                     onClick={() => handleReview(report.id)}
-                    disabled={report.status === "REVIEWED"}
+                    disabled={report.status !== "OPEN"}
                     className="btn-review"
                   >
-                    Review
+                    {report.status === "CLOSED" ? "Closed" : "Close"}
                   </button>
                   <button
                     onClick={() => handleDismiss(report.id)}
-                    disabled={report.status === "DISMISSED"}
+                    disabled={report.status !== "OPEN"}
                     className="btn-dismiss"
                   >
-                    Dismiss
+                    {report.status === "DISMISSED" ? "Dismissed" : "Dismiss"}
                   </button>
                   <button
                     onClick={() => handleBlock(report)}
+                    disabled={report.status !== "OPEN"}
                     className="btn-block"
                   >
                     Block Content

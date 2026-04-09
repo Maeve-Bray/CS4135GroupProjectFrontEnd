@@ -1,20 +1,20 @@
 import { useEffect, useState, useCallback } from "react";
 import {
-  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import { getReports } from "../api/adminAPI";
 
 const STATUS_COLORS = {
   OPEN:      "#ef4444",
-  REVIEWED:  "#22c55e",
+  CLOSED:    "#22c55e",
   DISMISSED: "#9ca3af",
 };
 
 const TYPE_COLORS = {
-  USER:         "#7c3aed",
-  MESSAGE:      "#3b82f6",
-  BOOKING:      "#f59e0b",
-  TUTOR_PROFILE:"#10b981",
+  USER:          "#7c3aed",
+  MESSAGE:       "#3b82f6",
+  BOOKING:       "#f59e0b",
+  TUTOR_PROFILE: "#10b981",
 };
 
 function tally(reports, key) {
@@ -25,8 +25,12 @@ function tally(reports, key) {
   }, {});
 }
 
-function toChartData(counts) {
-  return Object.entries(counts).map(([name, value]) => ({ name, value }));
+function toChartData(counts, colorMap) {
+  return Object.entries(counts).map(([name, value]) => ({
+    name,
+    value,
+    fill: colorMap[name] ?? "#d1d5db",
+  }));
 }
 
 export default function ReportCharts({ token }) {
@@ -53,8 +57,8 @@ export default function ReportCharts({ token }) {
   if (error)   return <p style={{ color: "#b91c1c" }}>Could not load chart data: {error}</p>;
   if (reports.length === 0) return <p style={{ color: "#6b7280" }}>No report data yet.</p>;
 
-  const statusData = toChartData(tally(reports, "status"));
-  const typeData   = toChartData(tally(reports, "contentType"));
+  const statusData = toChartData(tally(reports, "status"), STATUS_COLORS);
+  const typeData   = toChartData(tally(reports, "contentType"), TYPE_COLORS);
 
   return (
     <div className="report-charts">
@@ -72,11 +76,7 @@ export default function ReportCharts({ token }) {
               dataKey="value"
               label={({ name, value }) => `${name} (${value})`}
               labelLine={false}
-            >
-              {statusData.map((entry) => (
-                <Cell key={entry.name} fill={STATUS_COLORS[entry.name] ?? "#d1d5db"} />
-              ))}
-            </Pie>
+            />
             <Tooltip />
             <Legend />
           </PieChart>
@@ -97,11 +97,7 @@ export default function ReportCharts({ token }) {
               dataKey="value"
               label={({ name, value }) => `${name} (${value})`}
               labelLine={false}
-            >
-              {typeData.map((entry) => (
-                <Cell key={entry.name} fill={TYPE_COLORS[entry.name] ?? "#d1d5db"} />
-              ))}
-            </Pie>
+            />
             <Tooltip />
             <Legend />
           </PieChart>

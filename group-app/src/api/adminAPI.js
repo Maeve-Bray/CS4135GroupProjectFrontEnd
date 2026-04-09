@@ -56,6 +56,36 @@ export async function dismissReport(token, reportId, adminId, notes = "") {
   return handleResponse(res);
 }
 
+// --- Reported content preview ---
+
+export async function getReportedMessage(token, messageId) {
+  const res = await fetch(`${API_BASE}/messages/${messageId}`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse(res);
+}
+
+export async function getReportedUser(token, userId) {
+  const res = await fetch(`${API_BASE}/users/${userId}`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse(res);
+}
+
+export async function getReportedBooking(token, bookingId) {
+  const res = await fetch(`http://localhost:8080/api/bookings/${bookingId}`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse(res);
+}
+
+export async function getReportedTutorProfile(token, tutorId) {
+  const res = await fetch(`http://localhost:8080/api/tutors/profile/${tutorId}`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse(res);
+}
+
 // --- Blocked Content ---
 
 export async function blockContent(token, { contentType, contentId, adminId, reason = "" }) {
