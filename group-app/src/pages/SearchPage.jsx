@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { createBooking } from "../api/bookingAPI";
 import { getTutorSkillNames, getTutors } from "../api/tutorAPI";
+import "../styles/style.css";
 
-/**
- * Optional client-side narrow of API results (skill name substring match, case-insensitive).
- * Backend has no category field; this keeps the UX aligned with tutor “areas.”
- */
 const SKILL_AREA_TAXONOMY = [
   {
     key: "academic",
@@ -168,7 +165,7 @@ function TutorPickCard({ tutor, selected, onSelect }) {
         )}
       </div>
       <div className="tutor-pick-card__footer">
-        {selected ? "Selected · click to keep" : "Select this tutor"}
+        {selected ? "Selected " : "Select this tutor"}
       </div>
     </button>
   );
@@ -199,6 +196,28 @@ export default function BookSession({ studentId, tutorId, initialSkillSearch = "
   const [tutors, setTutors] = useState([]);
   const [tutorSearchLoading, setTutorSearchLoading] = useState(false);
   const [tutorSearchError, setTutorSearchError] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const activeFilterCount = useMemo(() => {
+  let count = 0;
+  if (filterCategory) count += 1;
+  if (filterCategory && filterSubcategory !== "all") count += 1;
+  if (filterSkill.trim()) count += 1;
+  if (filterProficiency) count += 1;
+  if (verifiedOnly) count += 1;
+
+  const mr = parseFloat(minRatingInput);
+  if (minRatingInput !== "" && Number.isFinite(mr) && mr > 0) count += 1;
+
+  return count;
+}, [
+  filterCategory,
+  filterSubcategory,
+  filterSkill,
+  filterProficiency,
+  verifiedOnly,
+  minRatingInput,
+]);
 
   useEffect(() => {
     let cancelled = false;
@@ -326,136 +345,195 @@ useEffect(() => {
   );
   const messageIsError =
     message && !message.includes("successfully");
+    
+  
+
 
   return (
     <div className="book-session">
-      <h2>Book a Session</h2>
+        <div className="student-welcome-section">
+        <h2 className="student-welcome-heading">Hello!</h2>
+        <p className="student-welcome-subheading">
+          What would you like to learn today?
+        </p>
+
+        
+      </div>
+      
       <form onSubmit={handleSubmit}>
         <fieldset
+  style={{
+    border: "1px solid #ddd",
+    padding: "12px",
+    marginBottom: "16px",
+    borderRadius: "16px",
+  }}
+>
+  <legend>Find tutors</legend>
+
+  <datalist id="tutor-skill-suggestions">
+    {tutorSkillNames.map((name) => (
+      <option key={name} value={name} />
+    ))}
+  </datalist>
+
+  <div className="tutor-search-toolbar">
+    <input
+      type="search"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      placeholder="Search tutors by email, profile, or skills"
+      className="tutor-search-toolbar__input"
+      aria-label="Search tutors"
+    />
+
+    <button
+      type="button"
+      className="tutor-search-toolbar__filter-btn"
+      onClick={() => setFiltersOpen((prev) => !prev)}
+      aria-expanded={filtersOpen}
+      aria-controls="tutor-filter-panel"
+    >
+      Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+    </button>
+  </div>
+
+  {filtersOpen && (
+    <div id="tutor-filter-panel" className="tutor-filter-panel">
+      <div className="tutor-filter-grid">
+        <label style={{ display: "block" }}>
+          Category
+          <select
+            value={filterCategory}
+            onChange={(e) => {
+              setFilterCategory(e.target.value);
+              setFilterSubcategory("all");
+            }}
+            style={{ display: "block", width: "100%" }}
+          >
+            <option value="">All areas (no category filter)</option>
+            {SKILL_AREA_TAXONOMY.map((c) => (
+              <option key={c.key} value={c.key}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label style={{ display: "block" }}>
+          Subcategory
+          <select
+            value={filterSubcategory}
+            onChange={(e) => setFilterSubcategory(e.target.value)}
+            disabled={!filterCategory}
+            style={{ display: "block", width: "100%" }}
+          >
+            {!filterCategory ? (
+              <option value="all">—</option>
+            ) : (
+              subcategoriesForCategory.map((s) => (
+                <option key={s.key} value={s.key}>
+                  {s.label}
+                </option>
+              ))
+            )}
+          </select>
+        </label>
+
+        <label style={{ display: "block" }}>
+          Skill
+          <input
+            type="text"
+            list="tutor-skill-suggestions"
+            value={filterSkill}
+            onChange={(e) => setFilterSkill(e.target.value)}
+            placeholder="e.g. Python"
+            style={{ display: "block", width: "100%" }}
+          />
+        </label>
+
+        <label style={{ display: "block" }}>
+          Tutor proficiency
+          <select
+            value={filterProficiency}
+            onChange={(e) => setFilterProficiency(e.target.value)}
+            style={{ display: "block", width: "100%" }}
+          >
+            <option value="">Any</option>
+            <option value="BEGINNER">Beginner</option>
+            <option value="INTERMEDIATE">Intermediate</option>
+            <option value="ADVANCED">Advanced</option>
+          </select>
+        </label>
+
+        <label style={{ display: "block" }}>
+          Minimum rating (optional)
+          <input
+            type="number"
+            min="0"
+            step="0.1"
+            value={minRatingInput}
+            onChange={(e) => setMinRatingInput(e.target.value)}
+            placeholder="e.g. 4"
+            style={{ display: "block", width: "100%" }}
+          />
+        </label>
+
+        <label
           style={{
-            border: "1px solid #ddd",
-            padding: "12px",
-            marginBottom: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            marginTop: "28px",
           }}
         >
-          <legend>Find tutors</legend>
-          <datalist id="tutor-skill-suggestions">
-            {tutorSkillNames.map((name) => (
-              <option key={name} value={name} />
-            ))}
-          </datalist>
-          <label style={{ display: "block", marginBottom: "8px" }}>
-            Category
-            <select
-              value={filterCategory}
-              onChange={(e) => {
-                setFilterCategory(e.target.value);
-                setFilterSubcategory("all");
-              }}
-              style={{ display: "block", width: "100%", maxWidth: "22rem" }}
-            >
-              <option value="">All areas (no category filter)</option>
-              {SKILL_AREA_TAXONOMY.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label style={{ display: "block", marginBottom: "8px" }}>
-            Subcategory
-            <select
-              value={filterSubcategory}
-              onChange={(e) => setFilterSubcategory(e.target.value)}
-              disabled={!filterCategory}
-              style={{ display: "block", width: "100%", maxWidth: "22rem" }}
-            >
-              {!filterCategory ? (
-                <option value="all">—</option>
-              ) : (
-                subcategoriesForCategory.map((s) => (
-                  <option key={s.key} value={s.key}>
-                    {s.label}
-                  </option>
-                ))
-              )}
-            </select>
-          </label>
-          {filterCategory && (
-            <p
-              style={{
-                fontSize: "0.85rem",
-                color: "#64748b",
-                marginTop: 0,
-                marginBottom: "12px",
-                maxWidth: "28rem",
-              }}
-            >
-              Showing tutors whose skills match this area. Choose{" "}
-              <strong>All areas</strong> above if the list is empty.
-            </p>
-          )}
-          <label style={{ display: "block", marginBottom: "8px" }}>
-            Skill (matches tutors teaching this skill — pick or type)
-            <input
-              type="text"
-              list="tutor-skill-suggestions"
-              value={filterSkill}
-              onChange={(e) => setFilterSkill(e.target.value)}
-              placeholder="e.g. Python (substring match)"
-              style={{ display: "block", width: "100%", maxWidth: "22rem" }}
-            />
-          </label>
-          <label style={{ display: "block", marginBottom: "8px" }}>
-            Keyword (email, profile, skills)
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ display: "block", width: "100%", maxWidth: "22rem" }}
-            />
-          </label>
-          <label style={{ display: "block", marginBottom: "8px" }}>
-            Tutor proficiency
-            <select
-              value={filterProficiency}
-              onChange={(e) => setFilterProficiency(e.target.value)}
-              style={{ display: "block", width: "100%", maxWidth: "22rem" }}
-            >
-              <option value="">Any</option>
-              <option value="BEGINNER">Beginner</option>
-              <option value="INTERMEDIATE">Intermediate</option>
-              <option value="ADVANCED">Advanced</option>
-            </select>
-          </label>
+          <input
+            type="checkbox"
+            checked={verifiedOnly}
+            onChange={(e) => setVerifiedOnly(e.target.checked)}
+          />
+          Verified tutors only
+        </label>
+      </div>
 
-          <label style={{ display: "block", marginTop: "8px" }}>
-            <input
-              type="checkbox"
-              checked={verifiedOnly}
-              onChange={(e) => setVerifiedOnly(e.target.checked)}
-            />{" "}
-            Verified tutors only
-          </label>
+      {filterCategory && (
+        <p
+          style={{
+            fontSize: "0.85rem",
+            color: "#64748b",
+            marginTop: "12px",
+            marginBottom: 0,
+            maxWidth: "40rem",
+          }}
+        >
+          Showing tutors whose skills match this area. Choose{" "}
+          <strong>All areas</strong> above if the list is empty.
+        </p>
+      )}
 
-          <label style={{ display: "block", marginTop: "8px" }}>
-            Minimum rating (optional)
-            <input
-              type="number"
-              min="0"
-              step="0.1"
-              value={minRatingInput}
-              onChange={(e) => setMinRatingInput(e.target.value)}
-              placeholder="e.g. 4"
-              style={{ marginLeft: "8px", width: "5rem" }}
-            />
-          </label>
+      <div style={{ marginTop: "12px" }}>
+        <button
+          type="button"
+          onClick={() => {
+            setFilterCategory("");
+            setFilterSubcategory("all");
+            setFilterSkill(initialSkillSearch || "");
+            setFilterProficiency("");
+            setVerifiedOnly(false);
+            setMinRatingInput("");
+          }}
+        >
+          Clear filters
+        </button>
+      </div>
+    </div>
+  )}
 
-          {tutorSearchLoading && <p>Loading tutors…</p>}
-          {tutorSearchError && (
-            <p style={{ color: "crimson" }}>{tutorSearchError}</p>
-          )}
-        </fieldset>
+  {tutorSearchLoading && <p>Loading tutors…</p>}
+  {tutorSearchError && (
+    <p style={{ color: "crimson" }}>{tutorSearchError}</p>
+  )}
+</fieldset>
 
         <h3 className="tutor-cards-heading">Choose a tutor</h3>
         {!tutorSearchLoading &&
@@ -473,7 +551,7 @@ useEffect(() => {
           !tutorSearchError && (
             <p className="tutor-cards-empty">
               No tutors match these filters. Try clearing the skill or keyword
-              search.a
+              search.
             </p>
           )}
         {displayTutors.length > 0 && (
@@ -498,77 +576,80 @@ useEffect(() => {
           </p>
         )}
 
-        <div className="book-session-details">
-          <h3>Session details</h3>
-          <label style={{ display: "block", marginBottom: "4px" }}>
-            Session skill (for booking)
-          </label>
-          <input
-            type="text"
-            name="skill"
-            list="tutor-skill-suggestions"
-            value={formData.skill}
-            onChange={handleChange}
-            placeholder="Pick from suggestions or type your topic"
-            style={{
-              display: "block",
-              marginBottom: "12px",
-              maxWidth: "22rem",
-              padding: "8px 10px",
-              borderRadius: "8px",
-              border: "1px solid #d1d5db",
-            }}
-          />
+        
+        {selectedTutor && (
+  <div className="book-session-details">
+    <h3>Session details</h3>
+    <label style={{ display: "block", marginBottom: "4px" }}>
+      Session skill (for booking)
+    </label>
+    <input
+      type="text"
+      name="skill"
+      list="tutor-skill-suggestions"
+      value={formData.skill}
+      onChange={handleChange}
+      placeholder="Pick from suggestions or type your topic"
+      style={{
+        display: "block",
+        marginBottom: "12px",
+        maxWidth: "22rem",
+        padding: "8px 10px",
+        borderRadius: "8px",
+        border: "1px solid #d1d5db",
+      }}
+    />
 
-          <div className="book-session-row">
-            <label>
-              Date
-              <br />
-              <input
-                type="date"
-                name="sessionDate"
-                value={formData.sessionDate}
-                onChange={handleChange}
-              />
-            </label>
-            <label>
-              Start
-              <br />
-              <input
-                type="time"
-                name="startTime"
-                value={formData.startTime}
-                onChange={handleChange}
-              />
-            </label>
-            <label>
-              End
-              <br />
-              <input
-                type="time"
-                name="endTime"
-                value={formData.endTime}
-                onChange={handleChange}
-              />
-            </label>
-          </div>
+    <div className="book-session-row">
+      <label>
+        Date
+        <br />
+        <input
+          type="date"
+          name="sessionDate"
+          value={formData.sessionDate}
+          onChange={handleChange}
+        />
+      </label>
+      <label>
+        Start
+        <br />
+        <input
+          type="time"
+          name="startTime"
+          value={formData.startTime}
+          onChange={handleChange}
+        />
+      </label>
+      <label>
+        End
+        <br />
+        <input
+          type="time"
+          name="endTime"
+          value={formData.endTime}
+          onChange={handleChange}
+        />
+      </label>
+    </div>
 
-          <label style={{ display: "block" }}>
-            Notes
-            <textarea
-              name="notes"
-              placeholder="Notes"
-              value={formData.notes}
-              onChange={handleChange}
-            />
-          </label>
+    <label style={{ display: "block" }}>
+      Notes
+      <textarea
+        name="notes"
+        placeholder="Notes"
+        value={formData.notes}
+        onChange={handleChange}
+      />
+    </label>
 
-          <div className="book-session-submit">
-            <button type="submit" disabled={!formData.tutorId}>
-              Request Session
-            </button>
-          </div>
-        </div>
+    <div className="book-session-submit">
+      <button type="submit" disabled={!formData.tutorId}>
+        Request Session
+      </button>
+    </div>
+  </div>
+)}
       </form>
 
       {message && (

@@ -35,3 +35,11 @@ export async function loginUser(data) {
 
   return result;
 }
+import axios from "axios";
+
+export const updateMyProfile = (userId, data) => {
+  return axios.put(`http://localhost:8080/api/auth/profile/${userId}`, data);
+};
+export const getMyProfile = (userId) => {
+  return axios.get(`http://localhost:8080/api/auth/profile/${userId}`);
+};
