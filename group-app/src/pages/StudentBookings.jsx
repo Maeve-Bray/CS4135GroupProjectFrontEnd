@@ -89,10 +89,11 @@ function formatSelectedDate(date) {
 function getStatusClass(status) {
   switch (status) {
     case "CONFIRMED":
-    case "APPROVED":
       return "tb-status-badge tb-status-confirmed";
     case "PENDING":
       return "tb-status-badge tb-status-pending";
+    case "COMPLETED":
+      return "tb-status-badge tb-status-completed";
     case "REJECTED":
     case "CANCELLED":
     case "CANCELED":
@@ -222,7 +223,10 @@ export default function StudentBookings({ studentId }) {
     }
   }, [bookings, calendarInitialized]);
 
-  const calendarDays = useMemo(() => getCalendarDays(currentMonth), [currentMonth]);
+  const calendarDays = useMemo(
+    () => getCalendarDays(currentMonth),
+    [currentMonth]
+  );
 
   const selectedDateKey = getDateKey(selectedDate);
   const selectedDayBookings = bookingsByDate[selectedDateKey] || [];
@@ -320,13 +324,18 @@ export default function StudentBookings({ studentId }) {
                 {calendarDays.map((day) => {
                   const key = getDateKey(day);
                   const dayBookings = bookingsByDate[key] || [];
+
                   const pendingCount = dayBookings.filter(
                     (booking) => booking.status === "PENDING"
                   ).length;
+
                   const confirmedCount = dayBookings.filter(
                     (booking) =>
-                      booking.status === "CONFIRMED" ||
-                      booking.status === "APPROVED"
+                      booking.status === "CONFIRMED" 
+                  ).length;
+
+                  const completedCount = dayBookings.filter(
+                    (booking) => booking.status === "COMPLETED"
                   ).length;
 
                   const isSelected = isSameDay(day, selectedDate);
@@ -379,6 +388,11 @@ export default function StudentBookings({ studentId }) {
                                 {confirmedCount} confirmed
                               </span>
                             )}
+                            {completedCount > 0 && (
+                              <span className="tb-completed-mini-badge">
+                                {completedCount} completed
+                              </span>
+                            )}
                             {pendingCount > 0 && (
                               <span className="tb-pending-mini-badge">
                                 {pendingCount} pending
@@ -424,8 +438,13 @@ export default function StudentBookings({ studentId }) {
                   </span>
                 </div>
 
+                {booking.status === "COMPLETED" && (
+                  <div className="tb-completed-banner">
+                    This booking has been completed.
+                  </div>
+                )}
+
                 {(booking.status === "PENDING" ||
-                  booking.status === "APPROVED" ||
                   booking.status === "CONFIRMED") && (
                   <div className="tb-action-row">
                     <button
@@ -437,13 +456,16 @@ export default function StudentBookings({ studentId }) {
                   </div>
                 )}
 
-                {booking.status === "CONFIRMED" && (
+                {(booking.status === "CONFIRMED" ||
+                  booking.status === "COMPLETED") && (
                   <div className="tb-action-row">
                     <button
                       className="tb-message-button"
                       onClick={() => setActiveChat(booking)}
                     >
-                      {activeChat?.id === booking.id ? "Open Chat" : "Message Tutor"}
+                      {booking.status === "COMPLETED"
+                        ? "View Messages"
+                        : "Message Tutor"}
                     </button>
                   </div>
                 )}
