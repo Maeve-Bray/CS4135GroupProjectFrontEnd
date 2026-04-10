@@ -69,7 +69,7 @@ export default function LoginPage({ onShowRegister }) {
 
           <div className="group">
             <button type="submit" className="overlap-group">
-              <span className="text-wrapper-6">sign in</span>
+              <span className="text-wrapper-6">log in</span>
             </button>
           </div>
         </form>

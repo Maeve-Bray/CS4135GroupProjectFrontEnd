@@ -96,7 +96,11 @@ function getStatusClass(status) {
       return "tb-status-badge tb-status-confirmed";
     case "PENDING":
       return "tb-status-badge tb-status-pending";
+    case "COMPLETED":
+      return "tb-status-badge tb-status-completed";
     case "REJECTED":
+    case "CANCELLED":
+    case "CANCELED":
       return "tb-status-badge tb-status-rejected";
     default:
       return "tb-status-badge tb-status-default";
@@ -345,6 +349,9 @@ export default function TutorBookings({ tutorId }) {
                   const confirmedCount = dayBookings.filter(
                     (booking) => booking.status === "CONFIRMED"
                   ).length;
+                  const completedCount = dayBookings.filter(
+                    (booking) => booking.status === "COMPLETED"
+                  ).length;
 
                   const isSelected = isSameDay(day, selectedDate);
                   const inCurrentMonth = isSameMonth(day, currentMonth);
@@ -396,6 +403,11 @@ export default function TutorBookings({ tutorId }) {
                                 {confirmedCount} confirmed
                               </span>
                             )}
+                            {completedCount > 0 && (
+                              <span className="tb-completed-mini-badge">
+                                {completedCount} completed
+                              </span>
+                            )}
                             {pendingCount > 0 && (
                               <span className="tb-pending-mini-badge">
                                 {pendingCount} pending
@@ -439,6 +451,12 @@ export default function TutorBookings({ tutorId }) {
                   </span>
                 </div>
 
+                {booking.status === "COMPLETED" && (
+                  <div className="tb-completed-banner">
+                    This booking has been completed.
+                  </div>
+                )}
+
                 {booking.status === "PENDING" && (
                   <div className="tb-action-row">
                     <button
@@ -456,13 +474,16 @@ export default function TutorBookings({ tutorId }) {
                   </div>
                 )}
 
-                {booking.status === "CONFIRMED" && (
+                {(booking.status === "CONFIRMED" ||
+                  booking.status === "COMPLETED") && (
                   <div className="tb-action-row">
                     <button
                       className="tb-message-button"
                       onClick={() => setActiveChat(booking)}
                     >
-                      {activeChat?.id === booking.id ? "Open Chat" : "Message Student"}
+                      {booking.status === "COMPLETED"
+                        ? "View Messages"
+                        : "Message Student"}
                     </button>
                   </div>
                 )}

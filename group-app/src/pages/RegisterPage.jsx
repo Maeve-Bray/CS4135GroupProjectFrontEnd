@@ -121,7 +121,7 @@ export default function RegisterPage({ onShowLogin }) {
 
         {error && <p className="error-text">{error}</p>}
 
-        {emailExists && (
+        
           <p className="no-account-register">
             <span className="span">Already have an account? </span>
             <button
@@ -132,7 +132,7 @@ export default function RegisterPage({ onShowLogin }) {
               Log in instead
             </button>
           </p>
-        )}
+        
       </section>
     </main>
   );
