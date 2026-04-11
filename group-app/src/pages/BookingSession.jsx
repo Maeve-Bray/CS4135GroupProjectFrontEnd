@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { createBooking } from "../api/bookingAPI";
 import { getTutorSkillNames, getTutors } from "../api/tutorAPI";
+import {
+  bookingSkillDisplayLabel,
+  tutorFitsStudentAreaSearch,
+  tutorSkillsForBooking,
+} from "../data/skillCategories";
 
 /**
  * Optional client-side narrow of API results (skill name substring match, case-insensitive).
@@ -27,14 +32,7 @@ const SKILL_AREA_TAXONOMY = [
       {
         key: "science",
         label: "Science",
-        hints: [
-          "science",
-          "biology",
-          "chemistry",
-          "physics",
-          "organic",
-          "lab",
-        ],
+        hints: ["science", "biology", "chemistry", "physics", "organic", "lab"],
       },
       {
         key: "languages",
@@ -99,14 +97,6 @@ function activeAreaHints(categoryKey, subcategoryKey) {
   return sub.hints ?? null;
 }
 
-function tutorMatchesAreaHints(tutor, hints) {
-  if (!hints?.length) return true;
-  const names = (tutor.skills ?? []).map((s) => (s.name ?? "").toLowerCase());
-  return names.some((name) =>
-    hints.some((h) => name.includes(String(h).toLowerCase())),
-  );
-}
-
 function TutorPickCard({ tutor, selected, onSelect }) {
   const email = tutor.email ?? `Tutor #${tutor.userId}`;
   const bio = (tutor.biography ?? "").trim();
@@ -154,9 +144,7 @@ function TutorPickCard({ tutor, selected, onSelect }) {
             {skills.map((s, i) => (
               <li key={`${s.name}-${i}`}>
                 <strong>{s.name || "(unnamed)"}</strong>
-                {s.proficiencyLevel
-                  ? ` · ${String(s.proficiencyLevel)}`
-                  : ""}
+                {s.proficiencyLevel ? ` · ${String(s.proficiencyLevel)}` : ""}
                 {s.experienceNote ? ` · ${s.experienceNote}` : ""}
               </li>
             ))}
@@ -174,7 +162,11 @@ function TutorPickCard({ tutor, selected, onSelect }) {
   );
 }
 
-export default function BookSession({ studentId, tutorId, initialSkillSearch = "" }) {
+export default function BookSession({
+  studentId,
+  tutorId,
+  initialSkillSearch = "",
+}) {
   const [tutorSkillNames, setTutorSkillNames] = useState([]);
   const [filterCategory, setFilterCategory] = useState("");
   const [filterSubcategory, setFilterSubcategory] = useState("all");
@@ -226,8 +218,9 @@ export default function BookSession({ studentId, tutorId, initialSkillSearch = "
       if (skillTrim) filters.skill = skillTrim;
       const qTrim = searchQuery.trim();
       if (qTrim) filters.q = qTrim;
-      if (filterProficiency) filters.proficiencyLevel = filterProficiency;
-      if (verifiedOnly) filters.verifiedOnly = true;
+      if (filterProficiency && !filterCategory) {
+        filters.proficiencyLevel = filterProficiency;
+      }
       const mr = parseFloat(minRatingInput, 10);
       if (minRatingInput !== "" && Number.isFinite(mr) && mr > 0) {
         filters.minRating = mr;
@@ -258,30 +251,59 @@ export default function BookSession({ studentId, tutorId, initialSkillSearch = "
       }
     }, 300);
     return () => clearTimeout(handle);
-  }, [filterSkill, filterProficiency, searchQuery, verifiedOnly, minRatingInput]);
+  }, [
+    filterSkill,
+    filterProficiency,
+    filterCategory,
+    searchQuery,
+    minRatingInput,
+  ]);
 
   const displayTutors = useMemo(() => {
-    const hints = activeAreaHints(filterCategory, filterSubcategory);
-    if (!hints) return tutors;
-    return tutors.filter((t) => tutorMatchesAreaHints(t, hints));
+    return tutors.filter((t) =>
+      tutorFitsStudentAreaSearch(
+        t,
+        filterCategory,
+        filterSubcategory,
+        activeAreaHints,
+      ),
+    );
   }, [tutors, filterCategory, filterSubcategory]);
+
+  const tutorSessionSkills = useMemo(() => {
+    const t = displayTutors.find(
+      (x) => String(x.userId) === String(formData.tutorId ?? ""),
+    );
+    return tutorSkillsForBooking(t);
+  }, [displayTutors, formData.tutorId]);
 
   useEffect(() => {
     setFormData((prev) => {
       const tid = String(prev.tutorId ?? "");
-      if (
-        tid &&
-        !displayTutors.some((t) => String(t.userId) === tid)
-      ) {
+      if (tid && !displayTutors.some((t) => String(t.userId) === tid)) {
         return { ...prev, tutorId: "" };
       }
       return prev;
     });
   }, [displayTutors]);
 
-useEffect(() => {
-  setFilterSkill(initialSkillSearch || "");
-}, [initialSkillSearch]);
+  useEffect(() => {
+    setFilterSkill(initialSkillSearch || "");
+  }, [initialSkillSearch]);
+
+  useEffect(() => {
+    const tid = String(formData.tutorId ?? "");
+    const names = tutorSessionSkills.map((s) => s.name.trim());
+    setFormData((prev) => {
+      const cur = (prev.skill ?? "").trim();
+      if (!tid || names.length === 0) {
+        return cur ? { ...prev, skill: "" } : prev;
+      }
+      if (names.includes(cur)) return prev;
+      if (names.length === 1) return { ...prev, skill: names[0] };
+      return { ...prev, skill: "" };
+    });
+  }, [formData.tutorId, tutorSessionSkills]);
 
   const subcategoriesForCategory =
     SKILL_AREA_TAXONOMY.find((c) => c.key === filterCategory)?.subcategories ??
@@ -324,8 +346,7 @@ useEffect(() => {
   const selectedTutor = displayTutors.find(
     (t) => String(t.userId) === String(formData.tutorId ?? ""),
   );
-  const messageIsError =
-    message && !message.includes("successfully");
+  const messageIsError = message && !message.includes("successfully");
 
   return (
     <div className="book-session">
@@ -430,15 +451,6 @@ useEffect(() => {
           </label>
 
           <label style={{ display: "block", marginTop: "8px" }}>
-            <input
-              type="checkbox"
-              checked={verifiedOnly}
-              onChange={(e) => setVerifiedOnly(e.target.checked)}
-            />{" "}
-            Verified tutors only
-          </label>
-
-          <label style={{ display: "block", marginTop: "8px" }}>
             Minimum rating (optional)
             <input
               type="number"
@@ -468,23 +480,19 @@ useEffect(() => {
               skill / keyword search.
             </p>
           )}
-        {!tutorSearchLoading &&
-          tutors.length === 0 &&
-          !tutorSearchError && (
-            <p className="tutor-cards-empty">
-              No tutors match these filters. Try clearing the skill or keyword
-              search.a
-            </p>
-          )}
+        {!tutorSearchLoading && tutors.length === 0 && !tutorSearchError && (
+          <p className="tutor-cards-empty">
+            No tutors match these filters. Try clearing the skill or keyword
+            search.a
+          </p>
+        )}
         {displayTutors.length > 0 && (
           <div className="tutor-card-grid">
             {displayTutors.map((t) => (
               <TutorPickCard
                 key={t.userId}
                 tutor={t}
-                selected={
-                  String(formData.tutorId) === String(t.userId)
-                }
+                selected={String(formData.tutorId) === String(t.userId)}
                 onSelect={selectTutor}
               />
             ))}
@@ -501,24 +509,53 @@ useEffect(() => {
         <div className="book-session-details">
           <h3>Session details</h3>
           <label style={{ display: "block", marginBottom: "4px" }}>
-            Session skill (for booking)
+            Session skill
           </label>
-          <input
-            type="text"
-            name="skill"
-            list="tutor-skill-suggestions"
-            value={formData.skill}
-            onChange={handleChange}
-            placeholder="Pick from suggestions or type your topic"
-            style={{
-              display: "block",
-              marginBottom: "12px",
-              maxWidth: "22rem",
-              padding: "8px 10px",
-              borderRadius: "8px",
-              border: "1px solid #d1d5db",
-            }}
-          />
+          {!selectedTutor ? (
+            <p
+              style={{
+                marginBottom: "12px",
+                color: "#64748b",
+                fontSize: "0.9rem",
+              }}
+            >
+              Select a tutor above to choose a skill.
+            </p>
+          ) : tutorSessionSkills.length === 0 ? (
+            <p
+              style={{
+                marginBottom: "12px",
+                color: "#b45309",
+                fontSize: "0.9rem",
+              }}
+            >
+              This tutor has no skills on their profile. They need to add at
+              least one before you can request a session.
+            </p>
+          ) : (
+            <select
+              name="skill"
+              value={formData.skill}
+              onChange={handleChange}
+              required
+              style={{
+                display: "block",
+                marginBottom: "12px",
+                maxWidth: "22rem",
+                padding: "8px 10px",
+                borderRadius: "8px",
+                border: "1px solid #d1d5db",
+                background: "#fff",
+              }}
+            >
+              <option value="">Choose a skill…</option>
+              {tutorSessionSkills.map((s, i) => (
+                <option key={`${s.name}-${i}`} value={s.name.trim()}>
+                  {bookingSkillDisplayLabel(s)}
+                </option>
+              ))}
+            </select>
+          )}
 
           <div className="book-session-row">
             <label>
@@ -564,7 +601,14 @@ useEffect(() => {
           </label>
 
           <div className="book-session-submit">
-            <button type="submit" disabled={!formData.tutorId}>
+            <button
+              type="submit"
+              disabled={
+                !formData.tutorId ||
+                tutorSessionSkills.length === 0 ||
+                !(formData.skill ?? "").trim()
+              }
+            >
               Request Session
             </button>
           </div>

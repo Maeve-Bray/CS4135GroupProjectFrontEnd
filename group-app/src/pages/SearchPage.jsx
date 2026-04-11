@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { createBooking } from "../api/bookingAPI";
 import { getTutorSkillNames, getTutors } from "../api/tutorAPI";
+import {
+  bookingSkillDisplayLabel,
+  tutorFitsStudentAreaSearch,
+  tutorSkillsForBooking,
+} from "../data/skillCategories";
 import "../styles/style.css";
 
 const SKILL_AREA_TAXONOMY = [
@@ -96,14 +101,6 @@ function activeAreaHints(categoryKey, subcategoryKey) {
   return sub.hints ?? null;
 }
 
-function tutorMatchesAreaHints(tutor, hints) {
-  if (!hints?.length) return true;
-  const names = (tutor.skills ?? []).map((s) => (s.name ?? "").toLowerCase());
-  return names.some((name) =>
-    hints.some((h) => name.includes(String(h).toLowerCase())),
-  );
-}
-
 function TutorPickCard({ tutor, selected, onSelect }) {
   const email = tutor.email ?? `Tutor #${tutor.userId}`;
   const bio = (tutor.biography ?? "").trim();
@@ -178,7 +175,6 @@ export default function BookSession({ studentId, tutorId, initialSkillSearch = "
   const [filterSkill, setFilterSkill] = useState(initialSkillSearch);
   const [filterProficiency, setFilterProficiency] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [minRatingInput, setMinRatingInput] = useState("");
 
   const [formData, setFormData] = useState({
@@ -204,7 +200,6 @@ export default function BookSession({ studentId, tutorId, initialSkillSearch = "
   if (filterCategory && filterSubcategory !== "all") count += 1;
   if (filterSkill.trim()) count += 1;
   if (filterProficiency) count += 1;
-  if (verifiedOnly) count += 1;
 
   const mr = parseFloat(minRatingInput);
   if (minRatingInput !== "" && Number.isFinite(mr) && mr > 0) count += 1;
@@ -215,7 +210,6 @@ export default function BookSession({ studentId, tutorId, initialSkillSearch = "
   filterSubcategory,
   filterSkill,
   filterProficiency,
-  verifiedOnly,
   minRatingInput,
 ]);
 
@@ -245,8 +239,9 @@ export default function BookSession({ studentId, tutorId, initialSkillSearch = "
       if (skillTrim) filters.skill = skillTrim;
       const qTrim = searchQuery.trim();
       if (qTrim) filters.q = qTrim;
-      if (filterProficiency) filters.proficiencyLevel = filterProficiency;
-      if (verifiedOnly) filters.verifiedOnly = true;
+      if (filterProficiency && !filterCategory) {
+        filters.proficiencyLevel = filterProficiency;
+      }
       const mr = parseFloat(minRatingInput, 10);
       if (minRatingInput !== "" && Number.isFinite(mr) && mr > 0) {
         filters.minRating = mr;
@@ -277,13 +272,32 @@ export default function BookSession({ studentId, tutorId, initialSkillSearch = "
       }
     }, 300);
     return () => clearTimeout(handle);
-  }, [filterSkill, filterProficiency, searchQuery, verifiedOnly, minRatingInput]);
+  }, [
+    filterSkill,
+    filterProficiency,
+    filterCategory,
+    searchQuery,
+    minRatingInput,
+  ]);
 
   const displayTutors = useMemo(() => {
-    const hints = activeAreaHints(filterCategory, filterSubcategory);
-    if (!hints) return tutors;
-    return tutors.filter((t) => tutorMatchesAreaHints(t, hints));
-  }, [tutors, filterCategory, filterSubcategory]);
+    return tutors.filter((t) =>
+      tutorFitsStudentAreaSearch(
+        t,
+        filterCategory,
+        filterSubcategory,
+        activeAreaHints,
+        filterProficiency,
+      ),
+    );
+  }, [tutors, filterCategory, filterSubcategory, filterProficiency]);
+
+ const tutorSessionSkills = useMemo(() => {
+    const t = displayTutors.find(
+      (x) => String(x.userId) === String(formData.tutorId ?? ""),
+    );
+    return tutorSkillsForBooking(t);
+  }, [displayTutors, formData.tutorId]);
 
   useEffect(() => {
     setFormData((prev) => {
@@ -301,6 +315,21 @@ export default function BookSession({ studentId, tutorId, initialSkillSearch = "
 useEffect(() => {
   setFilterSkill(initialSkillSearch || "");
 }, [initialSkillSearch]);
+
+ useEffect(() => {
+    const tid = String(formData.tutorId ?? "");
+    const names = tutorSessionSkills.map((s) => s.name.trim());
+    setFormData((prev) => {
+      const cur = (prev.skill ?? "").trim();
+      if (!tid || names.length === 0) {
+        return cur ? { ...prev, skill: "" } : prev;
+      }
+      if (names.includes(cur)) return prev;
+      if (names.length === 1) return { ...prev, skill: names[0] };
+      return { ...prev, skill: "" };
+    });
+  }, [formData.tutorId, tutorSessionSkills]);
+
 
   const subcategoriesForCategory =
     SKILL_AREA_TAXONOMY.find((c) => c.key === filterCategory)?.subcategories ??
@@ -478,22 +507,6 @@ useEffect(() => {
             style={{ display: "block", width: "100%" }}
           />
         </label>
-
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            marginTop: "28px",
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={verifiedOnly}
-            onChange={(e) => setVerifiedOnly(e.target.checked)}
-          />
-          Verified tutors only
-        </label>
       </div>
 
       {filterCategory && (
@@ -519,7 +532,6 @@ useEffect(() => {
             setFilterSubcategory("all");
             setFilterSkill(initialSkillSearch || "");
             setFilterProficiency("");
-            setVerifiedOnly(false);
             setMinRatingInput("");
           }}
         >
@@ -581,24 +593,43 @@ useEffect(() => {
   <div className="book-session-details">
     <h3>Session details</h3>
     <label style={{ display: "block", marginBottom: "4px" }}>
-      Session skill (for booking)
+      Session skill 
     </label>
-    <input
-      type="text"
-      name="skill"
-      list="tutor-skill-suggestions"
-      value={formData.skill}
-      onChange={handleChange}
-      placeholder="Pick from suggestions or type your topic"
-      style={{
-        display: "block",
-        marginBottom: "12px",
-        maxWidth: "22rem",
-        padding: "8px 10px",
-        borderRadius: "8px",
-        border: "1px solid #d1d5db",
-      }}
-    />
+    {tutorSessionSkills.length === 0 ? (
+      <p
+        style={{
+          marginBottom: "12px",
+          color: "#b45309",
+          fontSize: "0.9rem",
+        }}
+      >
+        This tutor has no skills on their profile. They need to add at least
+        one before you can request a session.
+      </p>
+    ) : (
+      <select
+        name="skill"
+        value={formData.skill}
+        onChange={handleChange}
+        required
+        style={{
+          display: "block",
+          marginBottom: "12px",
+          maxWidth: "22rem",
+          padding: "8px 10px",
+          borderRadius: "8px",
+          border: "1px solid #d1d5db",
+          background: "#fff",
+        }}
+      >
+        <option value="">Choose a skill…</option>
+        {tutorSessionSkills.map((s, i) => (
+          <option key={`${s.name}-${i}`} value={s.name.trim()}>
+            {bookingSkillDisplayLabel(s)}
+          </option>
+        ))}
+      </select>
+    )}
 
     <div className="book-session-row">
       <label>
@@ -644,7 +675,14 @@ useEffect(() => {
     </label>
 
     <div className="book-session-submit">
-      <button type="submit" disabled={!formData.tutorId}>
+     <button
+        type="submit"
+        disabled={
+          !formData.tutorId ||
+          tutorSessionSkills.length === 0 ||
+          !(formData.skill ?? "").trim()
+        }
+      >
         Request Session
       </button>
     </div>
