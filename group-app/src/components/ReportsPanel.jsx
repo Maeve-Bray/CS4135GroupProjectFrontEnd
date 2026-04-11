@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { getReports, reviewReport, dismissReport, blockContent } from "../api/adminAPI";
+import { getReports, blockReport, dismissReport } from "../api/adminAPI";
+import ReportedContentPreview from "./ReportedContentPreview";
 
 const CONTENT_TYPES = ["USER", "MESSAGE", "BOOKING", "TUTOR_PROFILE"];
-const REPORT_STATUSES = ["OPEN", "REVIEWED", "DISMISSED"];
+const REPORT_STATUSES = ["OPEN", "CLOSED", "DISMISSED"];
+
 
 function formatDate(iso) {
   if (!iso) return "-";
@@ -42,16 +44,6 @@ function ReportsPanel({ token, adminId }) {
     setNotes((prev) => ({ ...prev, [id]: value }));
   }
 
-  async function handleReview(reportId) {
-    setActionError(null);
-    try {
-      const updated = await reviewReport(token, reportId, adminId, notes[reportId] || "");
-      setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
-    } catch (e) {
-      setActionError(e.message);
-    }
-  }
-
   async function handleDismiss(reportId) {
     setActionError(null);
     try {
@@ -65,13 +57,8 @@ function ReportsPanel({ token, adminId }) {
   async function handleBlock(report) {
     setActionError(null);
     try {
-      await blockContent(token, {
-        contentType: report.contentType,
-        contentId: report.contentId,
-        adminId,
-        reason: notes[report.id] || `Blocked via report #${report.id}`,
-      });
-      alert(`Content blocked: ${report.contentType} #${report.contentId}`);
+      const updated = await blockReport(token, report.id, adminId, notes[report.id] || "");
+      setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
     } catch (e) {
       setActionError(e.message);
     }
@@ -120,6 +107,7 @@ function ReportsPanel({ token, adminId }) {
               <th>Content Type</th>
               <th>Content ID</th>
               <th>Reason</th>
+              <th>Reported Content</th>
               <th>Status</th>
               <th>Reported At</th>
               <th>Notes</th>
@@ -135,41 +123,50 @@ function ReportsPanel({ token, adminId }) {
                 <td>{report.contentId}</td>
                 <td className="report-reason">{report.reason}</td>
                 <td>
+                  <ReportedContentPreview
+                    token={token}
+                    contentType={report.contentType}
+                    contentId={report.contentId}
+                  />
+                </td>
+                <td>
                   <span className={`status-badge status-${report.status.toLowerCase()}`}>
                     {report.status}
                   </span>
                 </td>
                 <td>{formatDate(report.createdAt)}</td>
                 <td>
-                  <input
-                    type="text"
-                    placeholder="Optional notes..."
-                    value={notes[report.id] || ""}
-                    onChange={(e) => setNoteFor(report.id, e.target.value)}
-                    className="notes-input"
-                  />
+                  {report.status === "OPEN" ? (
+                    <input
+                      type="text"
+                      placeholder="Optional notes..."
+                      value={notes[report.id] || ""}
+                      onChange={(e) => setNoteFor(report.id, e.target.value)}
+                      className="notes-input"
+                    />
+                  ) : null}
                 </td>
                 <td className="action-buttons">
-                  <button
-                    onClick={() => handleReview(report.id)}
-                    disabled={report.status === "REVIEWED"}
-                    className="btn-review"
-                  >
-                    Review
-                  </button>
-                  <button
-                    onClick={() => handleDismiss(report.id)}
-                    disabled={report.status === "DISMISSED"}
-                    className="btn-dismiss"
-                  >
-                    Dismiss
-                  </button>
-                  <button
-                    onClick={() => handleBlock(report)}
-                    className="btn-block"
-                  >
-                    Block Content
-                  </button>
+                  {report.status === "OPEN" ? (
+                    <>
+                      <button
+                        onClick={() => handleBlock(report)}
+                        className="btn-block"
+                      >
+                        Block
+                      </button>
+                      <button
+                        onClick={() => handleDismiss(report.id)}
+                        className="btn-dismiss"
+                      >
+                        Dismiss
+                      </button>
+                    </>
+                  ) : (
+                    <span className="report-resolved-label">
+                      {report.status === "DISMISSED" ? "Dismissed — no further action" : "Blocked — no further action"}
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}

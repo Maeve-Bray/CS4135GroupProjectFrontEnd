@@ -472,10 +472,10 @@ export default function StudentBookings({ studentId }) {
 
                 <div className="tb-action-row">
                   <ReportModal
-                    contentType="BOOKING"
-                    contentId={booking.id}
-                    label="Report Booking"
-                  />
+                  contentType="USER"
+                  contentId={booking.tutorId}
+                  label="Report Tutor"
+                />
                 </div>
               </div>
             ))
