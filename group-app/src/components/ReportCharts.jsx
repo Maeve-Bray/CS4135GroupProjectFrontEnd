@@ -13,8 +13,7 @@ const STATUS_COLORS = {
 const TYPE_COLORS = {
   USER:          "#6d58a8",
   MESSAGE:       "#8ea88d",
-  BOOKING:       "#d7c7a2",
-  TUTOR_PROFILE: "#a8b8a0",
+  TUTOR_PROFILE: "#d7c7a2",
 };
 
 function tally(reports, key) {
