@@ -13,31 +13,42 @@ export default function MessagingPage({ booking, currentUserId }) {
   const [thread, setThread] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [error, setError] = useState("");
+  const [messagesUnavailable, setMessagesUnavailable] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const [unauthorisedError, setUnauthorisedError] = useState("");
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef(null);
 
   useEffect(() => {
     async function loadThread() {
       setLoading(true);
-      setError("");
+      setMessagesUnavailable(false);
+      setSendError("");
+      setUnauthorisedError("");
+
       try {
         const existing = await getThreadByBooking(booking.id);
         setThread(existing);
-        const msgs = await getMessages(existing.threadId);
-        setMessages(msgs);
+
+        try {
+          const msgs = await getMessages(existing.threadId);
+          setMessages(msgs);
+        } catch {
+          setMessagesUnavailable(true);
+        }
       } catch {
         try {
           const created = await createThread(booking.id);
           setThread(created);
           setMessages([]);
         } catch (err) {
-          setError(err.message);
+          setSendError(err.message);
         }
       } finally {
         setLoading(false);
       }
     }
+
     if (booking?.id) loadThread();
   }, [booking]);
 
@@ -48,18 +59,33 @@ export default function MessagingPage({ booking, currentUserId }) {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !thread) return;
-    setError("");
+
+    setSendError("");
+    setUnauthorisedError("");
+
     try {
       await sendMessage(thread.threadId, currentUserId, newMessage.trim());
       setNewMessage("");
-      const updated = await getMessages(thread.threadId);
-      setMessages(updated);
+
+      try {
+        const updated = await getMessages(thread.threadId);
+        setMessages(updated);
+        setMessagesUnavailable(false);
+      } catch {
+        setMessagesUnavailable(true);
+      }
     } catch (err) {
-      setError(err.message);
+      if (err.isUnauthorised) {
+        setUnauthorisedError(err.message || "Unauthorised — you are not a participant of this booking.");
+      } else {
+        setSendError(err.message || "Failed to send message.");
+      }
     }
   };
 
-  if (loading) return <p>Loading messages...</p>;
+  if (loading) return <p style={styles.loading}>Loading messages…</p>;
+
+  const inputDisabled = messagesUnavailable || !thread;
 
   return (
     <div style={styles.container}>
@@ -67,8 +93,20 @@ export default function MessagingPage({ booking, currentUserId }) {
         Messages — {booking.skill} on {booking.sessionDate}
       </h3>
 
+      {messagesUnavailable && (
+        <div style={styles.fallbackBanner} role="alert">
+          ⚠️ Messages unavailable right now. Please try again later.
+        </div>
+      )}
+
+      {unauthorisedError && (
+        <div style={styles.unauthorisedBanner} role="alert">
+          🚫 Unauthorised: {unauthorisedError}
+        </div>
+      )}
+
       <div style={styles.messageBox}>
-        {messages.length === 0 ? (
+        {messages.length === 0 && !messagesUnavailable ? (
           <p style={styles.empty}>No messages yet. Say hello!</p>
         ) : (
           messages.map((msg) => {
@@ -92,17 +130,34 @@ export default function MessagingPage({ booking, currentUserId }) {
         <div ref={bottomRef} />
       </div>
 
-      {error && <p style={styles.error}>{error}</p>}
+      {sendError && <p style={styles.sendError}>{sendError}</p>}
 
       <form onSubmit={handleSend} style={styles.form}>
         <input
-          style={styles.input}
+          id="message-input"
+          style={{
+            ...styles.input,
+            opacity: inputDisabled ? 0.5 : 1,
+            cursor: inputDisabled ? "not-allowed" : "text",
+          }}
           type="text"
-          placeholder="Type a message..."
+          placeholder={messagesUnavailable ? "Messaging unavailable" : "Type a message…"}
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
+          disabled={inputDisabled}
         />
-        <button type="submit" style={styles.sendBtn}>Send</button>
+        <button
+          id="send-btn"
+          type="submit"
+          style={{
+            ...styles.sendBtn,
+            opacity: inputDisabled ? 0.5 : 1,
+            cursor: inputDisabled ? "not-allowed" : "pointer",
+          }}
+          disabled={inputDisabled}
+        >
+          Send
+        </button>
       </form>
     </div>
   );
@@ -119,6 +174,31 @@ const styles = {
   header: {
     marginBottom: "12px",
     fontSize: "16px",
+    fontWeight: "600",
+  },
+  loading: {
+    color: "#6b7280",
+    fontSize: "14px",
+    padding: "16px",
+  },
+  fallbackBanner: {
+    backgroundColor: "#fef3c7",
+    color: "#92400e",
+    border: "1px solid #f59e0b",
+    borderRadius: "8px",
+    padding: "10px 14px",
+    marginBottom: "12px",
+    fontSize: "13px",
+    fontWeight: "500",
+  },
+  unauthorisedBanner: {
+    backgroundColor: "#fee2e2",
+    color: "#991b1b",
+    border: "1px solid #ef4444",
+    borderRadius: "8px",
+    padding: "10px 14px",
+    marginBottom: "12px",
+    fontSize: "13px",
     fontWeight: "600",
   },
   messageBox: {
@@ -154,7 +234,7 @@ const styles = {
     marginTop: "120px",
     fontSize: "14px",
   },
-  error: {
+  sendError: {
     color: "#dc2626",
     fontSize: "13px",
     marginBottom: "8px",
@@ -169,6 +249,7 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid #d1d5db",
     fontSize: "14px",
+    transition: "opacity 0.2s",
   },
   sendBtn: {
     padding: "10px 18px",
@@ -176,7 +257,7 @@ const styles = {
     border: "none",
     backgroundColor: "#4f46e5",
     color: "#fff",
-    cursor: "pointer",
     fontWeight: "600",
+    transition: "opacity 0.2s",
   },
 };
