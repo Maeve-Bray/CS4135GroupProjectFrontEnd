@@ -4,6 +4,12 @@ import { getMyProfile } from "../api/authAPI";
 import MessagingPage from "./MessagingPage";
 import ReportModal from "../components/ReportModal";
 import "../styles/tutorBookings.css";
+import {
+  createTutorReview,
+  getReviewByBookingId,
+} from "../api/reviewAPI";
+
+
 
 function ErrorModal({ message, onClose }) {
   if (!message) return null;
@@ -112,6 +118,67 @@ function resolveName(user) {
   );
 }
 
+function ReviewModal({
+  isOpen,
+  booking,
+  ratingValue,
+  setRatingValue,
+  ratingComment,
+  setRatingComment,
+  onClose,
+  onSubmit,
+}) {
+  if (!isOpen || !booking) return null;
+
+  return (
+    <div className="tb-overlay">
+      <div className="tb-modal">
+        <h3 className="tb-modal-title">Rate Your Tutor</h3>
+        <p className="tb-modal-message">
+          Leave a rating for this completed session.
+        </p>
+
+        <div className="tb-rating-row">
+  {[1, 2, 3, 4, 5].map((value) => {
+    const active = value <= ratingValue;
+
+    return (
+      <button
+        key={value}
+        type="button"
+        className={
+          active
+            ? "tb-heart-button tb-heart-button-active"
+            : "tb-heart-button"
+        }
+        onClick={() => setRatingValue(value)}
+      >
+        {active ? "♥" : "♡"}
+      </button>
+    );
+  })}
+</div>
+
+        <textarea
+          className="tb-review-textarea"
+          placeholder="Optional comment"
+          value={ratingComment}
+          onChange={(e) => setRatingComment(e.target.value)}
+        />
+
+        <div className="tb-action-row">
+          <button className="tb-reject-button" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="tb-approve-button" onClick={onSubmit}>
+            Submit Review
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StudentBookings({ studentId }) {
   const [bookings, setBookings] = useState([]);
   const [tutorNames, setTutorNames] = useState({});
@@ -120,6 +187,11 @@ export default function StudentBookings({ studentId }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarInitialized, setCalendarInitialized] = useState(false);
+
+  const [reviewedBookings, setReviewedBookings] = useState({});
+const [ratingBooking, setRatingBooking] = useState(null);
+const [ratingValue, setRatingValue] = useState(5);
+const [ratingComment, setRatingComment] = useState("");
 
   const loadBookings = async () => {
     try {
@@ -228,6 +300,73 @@ export default function StudentBookings({ studentId }) {
     [currentMonth]
   );
 
+  useEffect(() => {
+  async function loadReviewStatuses() {
+    const completedBookings = bookings.filter(
+      (booking) => booking.status === "COMPLETED"
+    );
+
+    if (completedBookings.length === 0) {
+      setReviewedBookings({});
+      return;
+    }
+
+    const results = await Promise.allSettled(
+      completedBookings.map(async (booking) => {
+        try {
+          await getReviewByBookingId(booking.id);
+          return [booking.id, true];
+        } catch (error) {
+          if (error.response?.status === 404) {
+            return [booking.id, false];
+          }
+          throw error;
+        }
+      })
+    );
+
+    const reviewedMap = {};
+
+    results.forEach((result) => {
+      if (result.status === "fulfilled") {
+        const [bookingId, reviewed] = result.value;
+        reviewedMap[bookingId] = reviewed;
+      }
+    });
+
+    setReviewedBookings(reviewedMap);
+  }
+
+  if (bookings.length > 0) {
+    loadReviewStatuses();
+  }
+}, [bookings]);
+
+const handleSubmitReview = async () => {
+  if (!ratingBooking) return;
+
+  try {
+    await createTutorReview({
+      bookingId: ratingBooking.id,
+      studentId,
+      rating: ratingValue,
+      comment: ratingComment,
+    });
+
+    setReviewedBookings((prev) => ({
+      ...prev,
+      [ratingBooking.id]: true,
+    }));
+
+    setRatingBooking(null);
+    setRatingValue(5);
+    setRatingComment("");
+  } catch (error) {
+    console.error("Error creating review", error);
+    setErrorMessage("Failed to submit review.");
+  }
+};
+
   const selectedDateKey = getDateKey(selectedDate);
   const selectedDayBookings = bookingsByDate[selectedDateKey] || [];
 
@@ -261,7 +400,20 @@ export default function StudentBookings({ studentId }) {
         message={errorMessage}
         onClose={() => setErrorMessage("")}
       />
-
+ <ReviewModal
+  isOpen={!!ratingBooking}
+  booking={ratingBooking}
+  ratingValue={ratingValue}
+  setRatingValue={setRatingValue}
+  ratingComment={ratingComment}
+  setRatingComment={setRatingComment}
+  onClose={() => {
+    setRatingBooking(null);
+    setRatingValue(5);
+    setRatingComment("");
+  }}
+  onSubmit={handleSubmitReview}
+/>
       <div className="tb-header-row">
         <div>
           <h2 className="tb-heading">My Bookings</h2>
@@ -439,10 +591,23 @@ export default function StudentBookings({ studentId }) {
                 </div>
 
                 {booking.status === "COMPLETED" && (
-                  <div className="tb-completed-banner">
-                    This booking has been completed.
-                  </div>
-                )}
+  <div className="tb-completed-banner">
+    {reviewedBookings[booking.id]
+      ? "This booking has been completed. You have rated this tutor."
+      : "This booking has been completed."}
+  </div>
+)}
+                {booking.status === "COMPLETED" && !reviewedBookings[booking.id] && (
+  <div className="tb-action-row">
+    <button
+      className="tb-message-button"
+      onClick={() => setRatingBooking(booking)}
+    >
+      Rate Tutor
+    </button>
+  </div>
+)}
+
 
                 {(booking.status === "PENDING" ||
                   booking.status === "CONFIRMED") && (
