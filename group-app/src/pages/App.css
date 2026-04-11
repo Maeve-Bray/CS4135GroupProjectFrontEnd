@@ -532,8 +532,13 @@ body {
   margin-bottom: 12px;
 }
 
-.admin-table {
+.admin-table-scroll {
+  overflow-x: auto;
   width: 100%;
+}
+
+.admin-table {
+  min-width: 900px;
   border-collapse: collapse;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 15px;

@@ -99,6 +99,7 @@ function ReportsPanel({ token, adminId }) {
       )}
 
       {reports.length > 0 && (
+        <div className="admin-table-scroll">
         <table className="admin-table">
           <thead>
             <tr>
@@ -172,6 +173,7 @@ function ReportsPanel({ token, adminId }) {
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );
