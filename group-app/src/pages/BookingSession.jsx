@@ -3,7 +3,7 @@ import { createBooking } from "../api/bookingAPI";
 import { getTutorSkillNames, getTutors } from "../api/tutorAPI";
 import {
   bookingSkillDisplayLabel,
-  tutorFitsStudentAreaSearch,
+  filterTutorsByStudentSearch,
   tutorSkillsForBooking,
 } from "../data/skillCategories";
 
@@ -173,7 +173,6 @@ export default function BookSession({
   const [filterSkill, setFilterSkill] = useState(initialSkillSearch);
   const [filterProficiency, setFilterProficiency] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [minRatingInput, setMinRatingInput] = useState("");
 
   const [formData, setFormData] = useState({
@@ -259,16 +258,17 @@ export default function BookSession({
     minRatingInput,
   ]);
 
-  const displayTutors = useMemo(() => {
-    return tutors.filter((t) =>
-      tutorFitsStudentAreaSearch(
-        t,
+  const displayTutors = useMemo(
+    () => 
+      filterTutorsByStudentSearch(
+        tutors,
         filterCategory,
         filterSubcategory,
         activeAreaHints,
-      ),
-    );
-  }, [tutors, filterCategory, filterSubcategory]);
+        filterProficiency
+    ),
+   [tutors, filterCategory, filterSubcategory, filterProficiency],
+  );
 
   const tutorSessionSkills = useMemo(() => {
     const t = displayTutors.find(
@@ -483,7 +483,7 @@ export default function BookSession({
         {!tutorSearchLoading && tutors.length === 0 && !tutorSearchError && (
           <p className="tutor-cards-empty">
             No tutors match these filters. Try clearing the skill or keyword
-            search.a
+            search.
           </p>
         )}
         {displayTutors.length > 0 && (

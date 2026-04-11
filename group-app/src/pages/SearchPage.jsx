@@ -3,7 +3,7 @@ import { createBooking } from "../api/bookingAPI";
 import { getTutorSkillNames, getTutors } from "../api/tutorAPI";
 import {
   bookingSkillDisplayLabel,
-  tutorFitsStudentAreaSearch,
+  filterTutorsByStudentSearch,
   tutorSkillsForBooking,
 } from "../data/skillCategories";
 import {
@@ -416,17 +416,17 @@ const [modalReviewsError, setModalReviewsError] = useState("");
     minRatingInput,
   ]);
 
-  const displayTutors = useMemo(() => {
-    return tutors.filter((t) =>
-      tutorFitsStudentAreaSearch(
-        t,
+  const displayTutors = useMemo(
+    () =>
+        filterTutorsByStudentSearch(
+        tutors,
         filterCategory,
         filterSubcategory,
         activeAreaHints,
         filterProficiency
-      )
+      ),
+   [tutors, filterCategory, filterSubcategory, filterProficiency],
     );
-  }, [tutors, filterCategory, filterSubcategory, filterProficiency]);
 
   useEffect(() => {
     let cancelled = false;
