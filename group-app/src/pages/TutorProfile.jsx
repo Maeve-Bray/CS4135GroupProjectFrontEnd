@@ -14,6 +14,10 @@ import {
   resolveTopicFromName,
   topicsFor,
 } from "../data/skillCategories";
+import {
+  getTutorReviews,
+  getTutorAverageRating,
+} from "../api/reviewAPI";
 import "../styles/dashboard.css";
 
 const resolveName = (user) =>
@@ -59,6 +63,12 @@ function getSkillCardClass(skillName = "") {
   return "skill-card skill-card--default";
 }
 
+function renderHearts(rating = 0) {
+  return Array.from({ length: 5 }, (_, index) =>
+    index < Math.round(rating) ? "♥" : "♡"
+  ).join(" ");
+}
+
 export default function TutorProfile({ tutorId }) {
   const { auth, setAuth } = useAuth();
 
@@ -71,6 +81,12 @@ export default function TutorProfile({ tutorId }) {
   const [successMessage, setSuccessMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(resolveName(auth));
+
+  const [tutorReviews, setTutorReviews] = useState([]);
+const [averageRating, setAverageRating] = useState(0);
+const [reviewsLoading, setReviewsLoading] = useState(false);
+
+
 
   const applyProfile = (profile) => {
     if (!profile) {
@@ -162,6 +178,35 @@ export default function TutorProfile({ tutorId }) {
       setIsLoading(false);
     }
   }, [tutorId, setAuth]);
+
+  const loadReviews = useCallback(async () => {
+  if (!tutorId) return;
+
+  setReviewsLoading(true);
+
+  try {
+    const [reviewsRes, averageRes] = await Promise.all([
+      getTutorReviews(tutorId),
+      getTutorAverageRating(tutorId),
+    ]);
+
+    const reviews = Array.isArray(reviewsRes.data) ? reviewsRes.data : [];
+    setTutorReviews(reviews);
+    setAverageRating(Number(averageRes.data?.averageRating || 0));
+  } catch (err) {
+    console.error("Error loading tutor reviews", err);
+    setTutorReviews([]);
+    setAverageRating(0);
+  } finally {
+    setReviewsLoading(false);
+  }
+}, [tutorId]);
+
+useEffect(() => {
+  if (tutorId) {
+    loadReviews();
+  }
+}, [loadReviews, tutorId]);
 
   useEffect(() => {
     if (tutorId) {
@@ -337,6 +382,26 @@ export default function TutorProfile({ tutorId }) {
             <span className="profile-value">{displayStatus}</span>
           </div>
 
+<div className="profile-row profile-row--reviews">
+  <span className="profile-label">Rating:</span>
+  <div className="profile-value profile-value--reviews">
+    <div className="profile-rating-summary">
+      <span className="profile-rating-hearts">
+        {renderHearts(averageRating)}
+      </span>
+      <span className="profile-rating-number">
+        {tutorReviews.length > 0
+          ? `${averageRating.toFixed(1)} / 5`
+          : "No ratings yet"}
+      </span>
+      {tutorReviews.length > 0 && (
+        <span className="profile-rating-count">
+          ({tutorReviews.length} review{tutorReviews.length !== 1 ? "s" : ""})
+        </span>
+      )}
+    </div>
+  </div>
+</div>
           <div className="skills-section">
             <h2 className="skills-heading">Current listed skills:</h2>
 
@@ -360,7 +425,38 @@ export default function TutorProfile({ tutorId }) {
             ) : (
               <p className="empty-skills-text">No skills added yet.</p>
             )}
+<div className="skills-section">
+  <h2 className="skills-heading">Student reviews</h2>
 
+  {reviewsLoading ? (
+    <p className="empty-skills-text">Loading reviews…</p>
+  ) : tutorReviews.length > 0 ? (
+    <div className="profile-reviews-list">
+      {tutorReviews.map((review) => (
+        <div key={review.id} className="profile-review-card">
+          <div className="profile-review-header">
+            <span className="profile-review-hearts">
+              {renderHearts(review.rating)}
+            </span>
+            <span className="profile-review-score">{review.rating}/5</span>
+          </div>
+
+          
+
+          {review.comment ? (
+            <p className="profile-review-comment">{review.comment}</p>
+          ) : (
+            <p className="profile-review-comment profile-review-comment--empty">
+              No written comment.
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="empty-skills-text">No reviews yet.</p>
+  )}
+</div>
             <button
               type="button"
               className="edit-profile-button"

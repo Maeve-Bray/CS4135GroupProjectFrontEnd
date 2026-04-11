@@ -342,3 +342,75 @@
   font-family: Georgia, "Times New Roman", serif;
   font-size: 18px;
 }
+
+.profile-value--reviews {
+  display: flex;
+  align-items: center;
+}
+
+.profile-rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.profile-rating-hearts,
+.profile-review-hearts {
+  color: #e63946;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+}
+
+.profile-rating-number {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.profile-rating-count {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.profile-reviews-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.profile-review-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.profile-review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.profile-review-score {
+  font-weight: 600;
+  color: #111827;
+}
+
+.profile-review-student {
+  margin: 0 0 8px;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.profile-review-comment {
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.5;
+}
+
+.profile-review-comment--empty {
+  color: #9ca3af;
+  font-style: italic;
+}
