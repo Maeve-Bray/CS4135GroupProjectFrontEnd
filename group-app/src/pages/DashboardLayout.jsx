@@ -7,9 +7,7 @@ function DashboardLayout({ currentPage, setCurrentPage, logout, children }) {
   return (
     <div className="portal-layout">
       <aside className="portal-sidebar">
-        <button type="button" className="sidebar-menu" aria-label="Menu">
-          ☰
-        </button>
+        
 
         <div className="sidebar-avatar">
           {(auth.email?.[0] || "U").toUpperCase()}
