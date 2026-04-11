@@ -6,7 +6,7 @@ import {
   filterTutorsByStudentSearch,
   tutorSkillsForBooking,
 } from "../data/skillCategories";
-
+import "../styles/tutorBookings.css";
 /**
  * Optional client-side narrow of API results (skill name substring match, case-insensitive).
  * Backend has no category field; this keeps the UX aligned with tutor “areas.”
@@ -173,8 +173,7 @@ export default function BookSession({
   const [filterSkill, setFilterSkill] = useState(initialSkillSearch);
   const [filterProficiency, setFilterProficiency] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [minRatingInput, setMinRatingInput] = useState("");
-
+  const [minRatingHearts, setMinRatingHearts] = useState(0);
   const [formData, setFormData] = useState({
     studentId,
     tutorId: tutorId ?? "",
@@ -220,10 +219,6 @@ export default function BookSession({
       if (filterProficiency && !filterCategory) {
         filters.proficiencyLevel = filterProficiency;
       }
-      const mr = parseFloat(minRatingInput, 10);
-      if (minRatingInput !== "" && Number.isFinite(mr) && mr > 0) {
-        filters.minRating = mr;
-      }
 
       setTutorSearchLoading(true);
       setTutorSearchError("");
@@ -255,7 +250,6 @@ export default function BookSession({
     filterProficiency,
     filterCategory,
     searchQuery,
-    minRatingInput,
   ]);
 
   const displayTutors = useMemo(
@@ -270,22 +264,37 @@ export default function BookSession({
    [tutors, filterCategory, filterSubcategory, filterProficiency],
   );
 
+  const minRatingThreshold = useMemo(
+    () => (minRatingHearts > 0 ? minRatingHearts : null),
+    [minRatingHearts],
+  );
+
+  /** Match stars on cards: search payload `averageRating` only. */
+  const visibleTutors = useMemo(() => {
+    if (minRatingThreshold == null) return displayTutors;
+    return displayTutors.filter((t) => {
+      const ar = t.averageRating;
+      if (ar == null || !Number.isFinite(Number(ar))) return false;
+      return Number(ar) >= minRatingThreshold;
+    });
+  }, [displayTutors, minRatingThreshold]);
+
   const tutorSessionSkills = useMemo(() => {
-    const t = displayTutors.find(
+    const t = visibleTutors.find(
       (x) => String(x.userId) === String(formData.tutorId ?? ""),
     );
     return tutorSkillsForBooking(t);
-  }, [displayTutors, formData.tutorId]);
+  }, [visibleTutors, formData.tutorId]);
 
   useEffect(() => {
     setFormData((prev) => {
       const tid = String(prev.tutorId ?? "");
-      if (tid && !displayTutors.some((t) => String(t.userId) === tid)) {
+      if (tid && !visibleTutors.some((t) => String(t.userId) === tid)) {
         return { ...prev, tutorId: "" };
       }
       return prev;
     });
-  }, [displayTutors]);
+  }, [visibleTutors]);
 
   useEffect(() => {
     setFilterSkill(initialSkillSearch || "");
@@ -343,7 +352,7 @@ export default function BookSession({
     }
   };
 
-  const selectedTutor = displayTutors.find(
+  const selectedTutor = visibleTutors.find(
     (t) => String(t.userId) === String(formData.tutorId ?? ""),
   );
   const messageIsError = message && !message.includes("successfully");
@@ -450,19 +459,40 @@ export default function BookSession({
             </select>
           </label>
 
-          <label style={{ display: "block", marginTop: "8px" }}>
-            Minimum rating (optional)
-            <input
-              type="number"
-              min="0"
-              step="0.1"
-              value={minRatingInput}
-              onChange={(e) => setMinRatingInput(e.target.value)}
-              placeholder="e.g. 4"
-              style={{ marginLeft: "8px", width: "5rem" }}
-            />
-          </label>
-
+            <div style={{ display: "block", marginTop: "8px" }}>
+            <span style={{ display: "block", marginBottom: "6px" }}>
+              Minimum rating
+            </span>
+            <div
+              className="tb-rating-row"
+              style={{ margin: 0, justifyContent: "flex-start", gap: "6px" }}
+            >
+              {[1, 2, 3, 4, 5].map((value) => {
+                const active = value <= minRatingHearts;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    className={
+                      active
+                        ? "tb-heart-button tb-heart-button-active"
+                        : "tb-heart-button"
+                    }
+                    onClick={() =>
+                      setMinRatingHearts((prev) =>
+                        prev === value ? 0 : value,
+                      )
+                    }
+                    aria-pressed={active}
+                    aria-label={`At least ${value} of 5 hearts average`}
+                  >
+                    {active ? "\u2665" : "\u2661"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+         
           {tutorSearchLoading && <p>Loading tutors…</p>}
           {tutorSearchError && (
             <p style={{ color: "crimson" }}>{tutorSearchError}</p>
@@ -486,9 +516,20 @@ export default function BookSession({
             search.
           </p>
         )}
-        {displayTutors.length > 0 && (
+          {!tutorSearchLoading &&
+          displayTutors.length > 0 &&
+          visibleTutors.length === 0 &&
+          !tutorSearchError &&
+          minRatingThreshold != null && (
+            <p className="tutor-cards-empty">
+              No tutors meet this <strong>minimum rating</strong>. Tap fewer
+              hearts or tap the same heart again to clear.
+            </p>
+          )}
+
+        {visibleTutors.length > 0 && (
           <div className="tutor-card-grid">
-            {displayTutors.map((t) => (
+            {visibleTutors.map((t) => (
               <TutorPickCard
                 key={t.userId}
                 tutor={t}
