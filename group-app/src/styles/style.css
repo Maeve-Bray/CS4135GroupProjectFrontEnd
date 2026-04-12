@@ -1,0 +1,366 @@
+.log-in {
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  background: #bad9b9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  box-sizing: border-box;
+}
+
+.log-in .log-in-modal {
+  width: 100%;
+  max-width: 415px;
+  background: #e3ffe2;
+  border: 1.5px solid rgba(85, 108, 84, 0.45);
+  border-radius: 38px;
+  padding: 42px 28px 34px;
+  box-sizing: border-box;
+}
+
+.log-in .text-wrapper {
+  margin: 8px 0 18px;
+  text-align: center;
+  color: #000;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.log-in .p {
+  margin: 0 0 8px;
+  text-align: left;
+  color: #111;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.log-in .log-in-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.log-in .field-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.log-in .div,
+.log-in .text-wrapper-2 {
+  margin: 0 0 10px;
+  color: #111;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.log-in .username-button,
+.log-in .password-button {
+  display: none;
+}
+
+.log-in .input-field {
+  width: 100%;
+  height: 64px;
+  padding: 0 26px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1.5px solid #b8b8b8;
+  border-radius: 18px;
+  outline: none;
+  color: #222;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.log-in .input-field::placeholder {
+  color: #8a8a8a;
+  opacity: 1;
+}
+
+.log-in .input-field:focus {
+  border-color: #8ea88d;
+  box-shadow: 0 0 0 2px rgba(142, 168, 141, 0.18);
+}
+
+.log-in .group {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -2px;
+}
+
+.log-in .overlap-group {
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 16px;
+  border: 1.5px solid #8ea88d;
+  background: #bad9b9;
+  color: #111;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.log-in .overlap-group:hover {
+  background: #b2d2b1;
+}
+
+.log-in .text-wrapper-6 {
+  color: #111;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.log-in .error-text {
+  margin: 12px 0 0;
+  text-align: center;
+  color: #a12727;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+}
+
+.log-in .no-account-register {
+  margin: 22px 0 0;
+  text-align: center;
+  color: #111;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.log-in .span {
+  color: #111;
+}
+
+.log-in .text-wrapper-5 {
+  color: #111;
+  text-decoration: underline;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.log-in .text-wrapper-5:hover {
+  opacity: 0.75;
+}
+.switch-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-field {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  padding-right: 56px;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #222;
+  pointer-events: none;
+}
+
+.log-in .log-in-form .field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.log-in .log-in-form .input-field {
+  width: 100%;
+  height: 64px;
+  padding: 0 26px;
+  box-sizing: border-box;
+  background: #f3f1f1;
+  border: 1.5px solid #b8b8b8;
+  border-radius: 18px;
+  outline: none;
+  color: #222;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.log-in .log-in-form .input-field::placeholder {
+  color: #8a8a8a;
+  opacity: 1;
+}
+
+
+.tutor-search-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.tutor-search-toolbar__input {
+  flex: 1 1 320px;
+  min-width: 220px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+.tutor-search-toolbar__filter-btn {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tutor-filter-panel {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.tutor-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.tutor-filter-panel input,
+.tutor-filter-panel select {
+  margin-top: 6px;
+  padding: 9px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+.selected-tutor-rating {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e63946;
+}
+
+.selected-tutor-rating--empty {
+  color: #6b7280;
+}
+
+.reviews-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.reviews-modal {
+  width: min(560px, 100%);
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18);
+  padding: 18px;
+}
+
+.reviews-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.reviews-modal__title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.reviews-modal__subtitle {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 0.92rem;
+}
+
+.reviews-modal__close {
+  border: none;
+  background: transparent;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #475569;
+}
+
+.reviews-modal__body {
+  padding-top: 4px;
+}
+
+.reviews-modal__list {
+  display: grid;
+  gap: 12px;
+}
+
+.reviews-modal__card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px;
+  background: #f8fafc;
+}
+
+.reviews-modal__card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.reviews-modal__hearts {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.reviews-modal__score {
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.reviews-modal__comment {
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.5;
+}
+
+.reviews-modal__comment--empty {
+  color: #6b7280;
+  font-style: italic;
+}

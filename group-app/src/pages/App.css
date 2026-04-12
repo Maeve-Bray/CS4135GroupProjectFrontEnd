@@ -464,3 +464,232 @@ body {
 .tutor-profile-skill-block > button[type="button"]:hover {
   background: #d1d5db;
 }
+
+/* ---- Admin Panels ---- */
+
+.admin-panel {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 28px 32px;
+  overflow-x: auto;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.admin-panel h2 {
+  margin: 0 0 20px;
+  font-size: 26px;
+  font-weight: 400;
+  color: #111;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.admin-filters label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  color: #4b4260;
+}
+
+.admin-filters select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #c9c9c9;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  background: #fff;
+  color: #222;
+}
+
+.admin-filters button {
+  border: 1px solid #8ea88d;
+  background: #bad9b9;
+  color: #111;
+  border-radius: 14px;
+  padding: 8px 18px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.admin-filters button:hover {
+  background: #aed0ad;
+}
+
+.admin-error {
+  color: #a12727;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid #ede9f3;
+  vertical-align: top;
+}
+
+.admin-table th {
+  background: #f5f3f9;
+  font-weight: 600;
+  color: #4b4260;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.admin-table tr:hover td {
+  background: #fbf9ff;
+}
+
+.report-reason {
+  max-width: 220px;
+  word-break: break-word;
+}
+
+.notes-input {
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid #c9c9c9;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  width: 150px;
+  background: #fff;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 110px;
+}
+
+.action-buttons button {
+  border: none;
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-dismiss { background: #e5e7eb; color: #4b4260; border: 1px solid #c9c9c9; }
+.btn-dismiss:hover { background: #d5d5d5; }
+.btn-dismiss:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-block   { background: #f5c6c6; color: #7f1d1d; border: 1px solid #e0a0a0; }
+.btn-block:hover   { background: #f0b0b0; }
+.btn-block:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.report-resolved-label {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.btn-unblock {
+  background: #bad9b9;
+  color: #2f5a2f;
+  border: 1px solid #8ea88d;
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  cursor: pointer;
+}
+.btn-unblock:hover { background: #aed0ad; }
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-badge.status-open      { background: #f5c6c6; color: #7f1d1d; }
+.status-badge.status-closed    { background: #bad9b9; color: #2f5a2f; }
+.status-badge.status-dismissed { background: #e5e7eb; color: #4b4260; }
+
+.btn-view-content {
+  background: #ece6f3;
+  color: #4b4260;
+  border: 1px solid #c9b8e8;
+  border-radius: 10px;
+  padding: 5px 10px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-view-content:hover  { background: #ddd6f0; }
+.btn-view-content:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.content-preview-wrapper {
+  margin-top: 8px;
+}
+
+.content-preview {
+  background: #f5f3f9;
+  border: 1px solid #ede9f3;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.content-preview p {
+  margin: 4px 0;
+  color: #333;
+  word-break: break-word;
+}
+
+.content-preview-error {
+  color: #a12727;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+}
+
+/* ---- Report Charts ---- */
+
+.report-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.report-chart-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 28px 24px;
+}
+
+.report-chart-title {
+  margin: 0 0 16px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: #111;
+}

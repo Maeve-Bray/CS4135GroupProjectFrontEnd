@@ -1,53 +1,52 @@
+import { useState } from "react";
 import { useAuth } from "../context/useAuth";
+import ReportsPanel from "../components/ReportsPanel";
+import BlockedContentPanel from "../components/BlockedContentPanel";
+import ReportCharts from "../components/ReportCharts";
+import "../styles/dashboard.css";
+
+const NAV_ITEMS = [
+  { key: "overview", label: "Overview" },
+  { key: "reports",  label: "Reports" },
+  { key: "blocked",  label: "Blocked Content" },
+];
 
 function AdminDashboard({ logout }) {
   const { auth } = useAuth();
+  const [activeTab, setActiveTab] = useState("overview");
 
   return (
-    <div className="dashboard-container">
-      <div className="hero-card admin-hero">
-        <h1>Admin Dashboard</h1>
-        <p>
-          Welcome, <strong>{auth.email}</strong>
-        </p>
-        <p>
-          Role: <strong>{auth.role}</strong> | Status: <strong>{auth.status}</strong>
-        </p>
-      </div>
-
-      <div className="dashboard-grid">
-        <div className="dashboard-card">
-          <h2>Manage Users</h2>
-          <p>
-            View users, update roles, and manage account access across the platform.
-          </p>
+    <div className="portal-layout">
+      <aside className="portal-sidebar">
+        <div className="sidebar-avatar">
+          {(auth.email?.[0] || "A").toUpperCase()}
         </div>
 
-        <div className="dashboard-card">
-          <h2>Review Reports</h2>
-          <p>
-            Inspect reported issues and review flagged activity submitted by users.
-          </p>
-        </div>
+        <nav className="sidebar-nav">
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={`sidebar-link${activeTab === item.key ? " active" : ""}`}
+              onClick={() => setActiveTab(item.key)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
 
-        <div className="dashboard-card">
-          <h2>Monitor Platform Activity</h2>
-          <p>
-            Keep track of registrations, sessions, and general platform usage.
-          </p>
-        </div>
+        <button type="button" className="sidebar-logout" onClick={logout}>
+          Log out
+        </button>
+      </aside>
 
-        <div className="dashboard-card">
-          <h2>View All Bookings</h2>
-          <p>
-            Access and monitor all booking activity taking place on the system.
-          </p>
-        </div>
-      </div>
+      <main className="portal-main">
+        <h1 className="brand-title">ShareCraft</h1>
 
-      <div className="logout-row">
-        <button onClick={logout}>Logout</button>
-      </div>
+        {activeTab === "overview" && <ReportCharts token={auth.token} />}
+        {activeTab === "reports"  && <ReportsPanel token={auth.token} adminId={auth.userId} />}
+        {activeTab === "blocked"  && <BlockedContentPanel token={auth.token} adminId={auth.userId} />}
+      </main>
     </div>
   );
 }

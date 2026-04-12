@@ -7,19 +7,24 @@ import StudentBookings from "./StudentBookings";
 import TutorBookings from "./TutorBookings";
 import TutorSchedule from "./TutorSchedule";
 import TutorProfile from "./TutorProfile";
-import HomePage from "./HomePage";
+import StudentProfile from "./StudentProfile";
 import AdminDashboard from "./AdminDashboard";
+import DashboardLayout from "./DashboardLayout";
+import SearchPage from "./SearchPage";
 
 import "./App.css";
+import MessagingPage from "./MessagingPage";
 
 function App() {
   const { auth, logout } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
   const [currentPage, setCurrentPage] = useState("home");
+  
 
   if (auth) {
     const userId = auth.userId;
     const needsUserId = auth.role === "STUDENT" || auth.role === "TUTOR";
+
     if (needsUserId && (userId == null || !Number.isFinite(userId))) {
       return (
         <div className="app-shell">
@@ -38,59 +43,56 @@ function App() {
     }
 
     if (auth.role === "ADMIN") {
-      return (
-        <div className="app-shell">
-          <AdminDashboard logout={logout} />
-        </div>
-      );
+      return <AdminDashboard logout={logout} />;
     }
 
     return (
-      <div className="app-shell">
-        <HomePage setCurrentPage={setCurrentPage} />
+     <DashboardLayout
+  currentPage={currentPage}
+  setCurrentPage={setCurrentPage}
+  logout={logout}
+>
+  {currentPage === "home" && auth.role === "STUDENT" && (
+  <StudentProfile
+  />
+)}
+{auth.role === "STUDENT" && currentPage === "search" && (
+  <SearchPage studentId={userId} />
+)}
+  {currentPage === "home" && auth.role === "TUTOR" && (
+    <TutorProfile tutorId={userId} />
+  )}
 
-        <div className="content-section">
-          {auth.role === "STUDENT" && currentPage === "book" && (
-            <BookSession studentId={userId} />
-          )}
+  {currentPage === "schedule" &&auth.role === "TUTOR" && (
+    <TutorBookings tutorId={userId} />
+  )}
 
-          {auth.role === "STUDENT" && currentPage === "studentBookings" && (
-            <StudentBookings studentId={userId} />
-          )}
+  {currentPage === "schedule" &&auth.role === "STUDENT" && (
+    <StudentBookings studentId={userId} />
+  )}
 
-          {auth.role === "TUTOR" && currentPage === "tutorBookings" && (
-            <TutorBookings tutorId={userId} />
-          )}
+  {currentPage === "messages" && (
+    <MessagingPage userId={userId} userRole={auth.role} />
+  )}
 
-          {auth.role === "TUTOR" && currentPage === "tutorSchedule" && (
-            <TutorSchedule tutorId={userId} />
-          )}
-          
-          {auth.role === "TUTOR" && currentPage === "tutorProfile" && (
-            <TutorProfile tutorId={userId} />
-          )}
-        </div>
+  {auth.role === "STUDENT" && currentPage === "book" && (
+    <BookSession studentId={userId} />
+  )}
 
-        <div className="logout-row">
-          <button type="button" onClick={logout}>Logout</button>
-        </div>
-      </div>
+  {auth.role === "TUTOR" && currentPage === "tutorBookings" && (
+    <TutorBookings tutorId={userId} />
+  )}
+</DashboardLayout>
     );
   }
 
   return (
     <div className="app-container">
-      {showRegister ? <RegisterPage /> : <LoginPage />}
-
-      <button
-        className="switch-button"
-        type="button"
-        onClick={() => setShowRegister(!showRegister)}
-      >
-        {showRegister
-          ? "Already have an account? Login"
-          : "Need an account? Register"}
-      </button>
+      {showRegister ? (
+        <RegisterPage onShowLogin={() => setShowRegister(false)} />
+      ) : (
+        <LoginPage onShowRegister={() => setShowRegister(true)} />
+      )}
     </div>
   );
 }
