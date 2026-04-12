@@ -3,7 +3,7 @@ import { createBooking } from "../api/bookingAPI";
 import { getTutorSkillNames, getTutors } from "../api/tutorAPI";
 import {
   bookingSkillDisplayLabel,
-  tutorFitsStudentAreaSearch,
+  filterTutorsByStudentSearch,
   tutorSkillsForBooking,
 } from "../data/skillCategories";
 import {
@@ -11,6 +11,7 @@ import {
   getTutorAverageRating,
 } from "../api/reviewAPI";
 import "../styles/style.css";
+import "../styles/tutorBookings.css";
 
 const SKILL_AREA_TAXONOMY = [
   {
@@ -291,7 +292,7 @@ export default function BookSession({
   const [filterSkill, setFilterSkill] = useState(initialSkillSearch);
   const [filterProficiency, setFilterProficiency] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [minRatingInput, setMinRatingInput] = useState("");
+   const [minRatingHearts, setMinRatingHearts] = useState(0);
   const [reviewsModalOpen, setReviewsModalOpen] = useState(false);
 const [reviewsModalTutor, setReviewsModalTutor] = useState(null);
 const [modalReviews, setModalReviews] = useState([]);
@@ -326,8 +327,7 @@ const [modalReviewsError, setModalReviewsError] = useState("");
     if (filterSkill.trim()) count += 1;
     if (filterProficiency) count += 1;
 
-    const mr = parseFloat(minRatingInput);
-    if (minRatingInput !== "" && Number.isFinite(mr) && mr > 0) count += 1;
+    if (minRatingHearts > 0) count += 1;
 
     return count;
   }, [
@@ -335,7 +335,7 @@ const [modalReviewsError, setModalReviewsError] = useState("");
     filterSubcategory,
     filterSkill,
     filterProficiency,
-    minRatingInput,
+    minRatingHearts,
   ]);
 
   useEffect(() => {
@@ -374,11 +374,6 @@ const [modalReviewsError, setModalReviewsError] = useState("");
         filters.proficiencyLevel = filterProficiency;
       }
 
-      const mr = parseFloat(minRatingInput);
-      if (minRatingInput !== "" && Number.isFinite(mr) && mr > 0) {
-        filters.minRating = mr;
-      }
-
       setTutorSearchLoading(true);
       setTutorSearchError("");
 
@@ -413,20 +408,52 @@ const [modalReviewsError, setModalReviewsError] = useState("");
     filterCategory,
     filterSubcategory,
     searchQuery,
-    minRatingInput,
   ]);
 
-  const displayTutors = useMemo(() => {
-    return tutors.filter((t) =>
-      tutorFitsStudentAreaSearch(
-        t,
+  const displayTutors = useMemo(
+    () =>
+        filterTutorsByStudentSearch(
+        tutors,
         filterCategory,
         filterSubcategory,
         activeAreaHints,
         filterProficiency
-      )
+      ),
+   [tutors, filterCategory, filterSubcategory, filterProficiency],
     );
-  }, [tutors, filterCategory, filterSubcategory, filterProficiency]);
+
+  const minRatingThreshold = useMemo(
+    () => (minRatingHearts > 0 ? minRatingHearts : null),
+    [minRatingHearts],
+  );
+
+  const visibleTutors = useMemo(() => {
+    if (minRatingThreshold == null) return displayTutors;
+    return displayTutors.filter((t) => {
+      const id = String(t.userId);
+      const loaded = Object.prototype.hasOwnProperty.call(
+        tutorReviewCounts,
+        id,
+      );
+      let avg;
+      if (loaded) {
+        avg = Number(tutorAverageRatings[id] ?? 0);
+      } else if (
+        t.averageRating != null &&
+        Number.isFinite(Number(t.averageRating))
+      ) {
+        avg = Number(t.averageRating);
+      } else {
+        return true;
+      }
+      return avg >= minRatingThreshold;
+    });
+  }, [
+    displayTutors,
+    minRatingThreshold,
+    tutorAverageRatings,
+    tutorReviewCounts,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -505,21 +532,21 @@ const [modalReviewsError, setModalReviewsError] = useState("");
   }, [displayTutors]);
 
   const tutorSessionSkills = useMemo(() => {
-    const t = displayTutors.find(
+    const t = visibleTutors.find(
       (x) => String(x.userId) === String(formData.tutorId ?? "")
     );
     return tutorSkillsForBooking(t);
-  }, [displayTutors, formData.tutorId]);
+  }, [visibleTutors, formData.tutorId]);
 
   useEffect(() => {
     setFormData((prev) => {
       const tid = String(prev.tutorId ?? "");
-      if (tid && !displayTutors.some((t) => String(t.userId) === tid)) {
+      if (tid && !visibleTutors.some((t) => String(t.userId) === tid)) {
         return { ...prev, tutorId: "" };
       }
       return prev;
     });
-  }, [displayTutors]);
+  }, [visibleTutors]);
 
   useEffect(() => {
     setFilterSkill(initialSkillSearch || "");
@@ -624,7 +651,7 @@ useEffect(() => {
     }
   };
 
-  const selectedTutor = displayTutors.find(
+  const selectedTutor = visibleTutors.find(
     (t) => String(t.userId) === String(formData.tutorId ?? "")
   );
 
@@ -754,18 +781,43 @@ useEffect(() => {
                   </select>
                 </label>
 
-                <label style={{ display: "block" }}>
-                  Minimum rating (optional)
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.1"
-                    value={minRatingInput}
-                    onChange={(e) => setMinRatingInput(e.target.value)}
-                    placeholder="e.g. 4"
-                    style={{ display: "block", width: "100%" }}
-                  />
-                </label>
+                <div style={{ display: "block" }}>
+                  <span style={{ display: "block", marginBottom: "6px" }}>
+                    Minimum rating
+                  </span>
+                  <div
+                    className="tb-rating-row"
+                    style={{
+                      margin: 0,
+                      justifyContent: "flex-start",
+                      gap: "6px",
+                    }}
+                  >
+                    {[1, 2, 3, 4, 5].map((value) => {
+                      const active = value <= minRatingHearts;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          className={
+                            active
+                              ? "tb-heart-button tb-heart-button-active"
+                              : "tb-heart-button"
+                          }
+                          onClick={() =>
+                            setMinRatingHearts((prev) =>
+                              prev === value ? 0 : value,
+                            )
+                          }
+                          aria-pressed={active}
+                          aria-label={`At least ${value} of 5 hearts average`}
+                        >
+                          {active ? "\u2665" : "\u2661"}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               {filterCategory && (
@@ -791,7 +843,7 @@ useEffect(() => {
                     setFilterSubcategory("all");
                     setFilterSkill(initialSkillSearch || "");
                     setFilterProficiency("");
-                    setMinRatingInput("");
+                    setMinRatingHearts(0);
                   }}
                 >
                   Clear filters
@@ -819,6 +871,17 @@ useEffect(() => {
             </p>
           )}
 
+         {!tutorSearchLoading &&
+          displayTutors.length > 0 &&
+          visibleTutors.length === 0 &&
+          !tutorSearchError &&
+          minRatingThreshold != null && (
+            <p className="tutor-cards-empty">
+              No tutors meet this <strong>minimum rating</strong>.Tap fewer hearts or tap the
+              same heart again to clear.
+            </p>
+          )}
+
         {!tutorSearchLoading && tutors.length === 0 && !tutorSearchError && (
           <p className="tutor-cards-empty">
             No tutors match these filters. Try clearing the skill or keyword
@@ -826,9 +889,9 @@ useEffect(() => {
           </p>
         )}
 
-        {displayTutors.length > 0 && (
+        {visibleTutors.length > 0 && (
           <div className="tutor-card-grid">
-            {displayTutors.map((t) => {
+            {visibleTutors.map((t) => {
               const tutorKey = String(t.userId);
               const ratingLoaded = Object.prototype.hasOwnProperty.call(
                 tutorReviewCounts,

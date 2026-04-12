@@ -187,9 +187,7 @@ export function findCategoryKeysFromLabels(categoryLabel, subcategoryLabel) {
   }
 
   for (const b of SKILL_BRANCHES) {
-    const area = b.areas.find(
-      (a) => a.label === subTrim || a.key === subTrim,
-    );
+    const area = b.areas.find((a) => a.label === subTrim || a.key === subTrim);
     if (area) {
       return { categoryKey: b.key, subcategoryKey: area.key };
     }
@@ -211,7 +209,10 @@ export function resolveTopicFromName(branchKey, areaKey, nameLabel) {
     return { topicKey: "", name: "" };
   }
   const topic = topics.find(
-    (t) => t.label === nl || t.key === nl || t.label.toLowerCase() === nl.toLowerCase(),
+    (t) =>
+      t.label === nl ||
+      t.key === nl ||
+      t.label.toLowerCase() === nl.toLowerCase(),
   );
   if (topic) {
     return { topicKey: topic.key, name: topic.label };
@@ -267,7 +268,7 @@ function menuSubtopicToTutorAreaKeys(branch, subtopicKey) {
 
 function skillTextMatchesKeywords(skill, keywords) {
   if (!keywords?.length) return false;
- const text = [
+  const text = [
     skill?.name,
     skill?.subcategoryKey,
     skill?.subcategory,
@@ -310,7 +311,6 @@ function resolvedSkillBranchAndAreaKey(skill) {
   return { branch, areaKey };
 }
 
-
 function skillTopicLabelFitsAreas(branch, areaKeys, skill) {
   const nameLow = (skill?.name ?? "").trim().toLowerCase();
   if (!nameLow) return false;
@@ -340,7 +340,7 @@ function skillMatchesCategoryFilter(
   studentSubtopicKey,
   menuHintKeywords,
 ) {
-    const { branch: skillBranch, areaKey: skillAreaKey } =
+  const { branch: skillBranch, areaKey: skillAreaKey } =
     resolvedSkillBranchAndAreaKey(skill);
   if (skillBranch) {
     if (skillBranch !== studentBranch) return false;
@@ -361,7 +361,6 @@ function skillMatchesCategoryFilter(
     return false;
   }
 
-  
   return skillTextMatchesKeywords(skill, menuHintKeywords);
 }
 
@@ -373,8 +372,8 @@ function skillProficiencyMatchesFilter(skill, proficiencyUpper) {
   return l === proficiencyUpper;
 }
 
-/** 
-* Tutor list filter: area (Academic / Non-academic) + optional proficiency.
+/**
+ * Tutor list filter: area (Academic / Non-academic) + optional proficiency.
  * - With a category: at least one skill must match that category and the proficiency (if any).
  * - With no category: any skill can satisfy proficiency (if any); area does not apply.
  */
@@ -383,13 +382,12 @@ export function tutorFitsStudentAreaSearch(
   studentCategoryKey,
   studentSubtopicKey,
   getHintKeywordsForMenu,
-   proficiencyLevelFilter = "",
+  proficiencyLevelFilter = "",
 ) {
-  
   const skills = tutor?.skills ?? [];
   if (!skills.length) return false;
 
-const profUpper = (proficiencyLevelFilter ?? "").trim().toUpperCase() || null;
+  const profUpper = (proficiencyLevelFilter ?? "").trim().toUpperCase() || null;
 
   const studentBranch = studentCategoryKey
     ? parseAcademicBranchKey(studentCategoryKey)
@@ -413,5 +411,24 @@ const profUpper = (proficiencyLevelFilter ?? "").trim().toUpperCase() || null;
     if (!matchesArea) return false;
     return skillProficiencyMatchesFilter(skill, profUpper);
   });
- 
+}
+
+/** Narrow API tutor list by the same rules as the student area + proficiency UI. */
+export function filterTutorsByStudentSearch(
+  tutors,
+  studentCategoryKey,
+  studentSubtopicKey,
+  getHintKeywordsForMenu,
+  proficiencyLevelFilter = "",
+) {
+  const list = Array.isArray(tutors) ? tutors : [];
+  return list.filter((t) =>
+    tutorFitsStudentAreaSearch(
+      t,
+      studentCategoryKey,
+      studentSubtopicKey,
+      getHintKeywordsForMenu,
+      proficiencyLevelFilter,
+    ),
+  );
 }
