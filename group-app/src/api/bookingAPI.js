@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_BASE_URL } from "./baseURL.js";
 
 const API = axios.create({
-    baseURL: "http://localhost:8080/api/bookings",
+    baseURL: `${API_BASE_URL}/api/bookings`,
 });
 
 export const createBooking = (data)=>API.post("",data);
@@ -13,4 +14,3 @@ export const cancelBooking = (id)=>API.put(`/${id}/cancel`);
 export const completeBooking = (id)=>API.put(`/${id}/complete`);
 export const getTutorSchedule = (tutorId, sessionDate)=>
     API.get(`/tutor/${tutorId}/schedule?sessionDate=${sessionDate}`);
-

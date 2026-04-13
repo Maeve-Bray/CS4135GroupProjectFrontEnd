@@ -1,4 +1,6 @@
-const API_BASE = "http://localhost:8080/api/messages";
+import { API_BASE_URL } from "./baseURL.js";
+
+const API_BASE = `${API_BASE_URL}/api/messages`;
 
 const getHeaders = () => ({
   "Content-Type": "application/json",

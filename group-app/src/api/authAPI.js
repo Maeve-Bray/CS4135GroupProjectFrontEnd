@@ -1,4 +1,6 @@
-const API_BASE = "http://localhost:8080/api/auth";
+import { API_BASE_URL } from "./baseURL.js";
+
+const API_BASE = `${API_BASE_URL}/api/auth`;
 
 export async function registerUser(data) {
   const response = await fetch(`${API_BASE}/register`, {
@@ -38,8 +40,8 @@ export async function loginUser(data) {
 import axios from "axios";
 
 export const updateMyProfile = (userId, data) => {
-  return axios.put(`http://localhost:8080/api/auth/profile/${userId}`, data);
+  return axios.put(`${API_BASE_URL}/api/auth/profile/${userId}`, data);
 };
 export const getMyProfile = (userId) => {
-  return axios.get(`http://localhost:8080/api/auth/profile/${userId}`);
+  return axios.get(`${API_BASE_URL}/api/auth/profile/${userId}`);
 };
