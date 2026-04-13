@@ -64,32 +64,40 @@ export default function MessagingPage({ booking, currentUserId }) {
   const [thread, setThread] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [error, setError] = useState("");
+  const [messagesUnavailable, setMessagesUnavailable] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const [unauthorisedError, setUnauthorisedError] = useState("");
   const [loading, setLoading] = useState(true);
   const [chatPartnerName, setChatPartnerName] = useState("");
   const bottomRef = useRef(null);
 
-  const isStudentView =
-    String(booking?.studentId) === String(currentUserId);
+  const isStudentView = String(booking?.studentId) === String(currentUserId);
+  const partnerUserId = isStudentView ? booking?.tutorId : booking?.studentId;
 
-  const partnerUserId = isStudentView
-    ? booking?.tutorId
-    : booking?.studentId;
+  const chatPartnerAvatar = isStudentView
+    ? booking?.tutorAvatarUrl
+    : booking?.studentAvatarUrl;
+  const fallbackPartnerName = isStudentView ? "Tutor" : "Student";
+  const chatDate = formatDisplayDate(
+    messages[0]?.sentAt || booking?.sessionDate || new Date()
+  );
 
   useEffect(() => {
     async function loadThread() {
       setLoading(true);
-      setError("");
+      setMessagesUnavailable(false);
+      setSendError("");
+      setUnauthorisedError("");
 
       try {
         const existing = await getThreadByBooking(booking.id);
         setThread(existing);
 
-        if (existing?.threadId) {
+        try {
           const msgs = await getMessages(existing.threadId);
           setMessages(msgs || []);
-        } else {
-          setMessages([]);
+        } catch {
+          setMessagesUnavailable(true);
         }
       } catch {
         try {
@@ -97,7 +105,7 @@ export default function MessagingPage({ booking, currentUserId }) {
           setThread(created);
           setMessages([]);
         } catch (err) {
-          setError(err.message || "Could not load messages.");
+          setSendError(err.message || "Could not load messages.");
         }
       } finally {
         setLoading(false);
@@ -140,26 +148,28 @@ export default function MessagingPage({ booking, currentUserId }) {
     e.preventDefault();
     if (!newMessage.trim() || !thread?.threadId) return;
 
-    setError("");
+    setSendError("");
+    setUnauthorisedError("");
+
     try {
       await sendMessage(thread.threadId, currentUserId, newMessage.trim());
       setNewMessage("");
-      const updated = await getMessages(thread.threadId);
-      setMessages(updated || []);
+
+      try {
+        const updated = await getMessages(thread.threadId);
+        setMessages(updated || []);
+        setMessagesUnavailable(false);
+      } catch {
+        setMessagesUnavailable(true);
+      }
     } catch (err) {
-      setError(err.message || "Failed to send message.");
+      if (err.isUnauthorised) {
+        setUnauthorisedError(err.message || "Unauthorised — you are not a participant of this booking.");
+      } else {
+        setSendError(err.message || "Failed to send message.");
+      }
     }
   };
-
-  const chatPartnerAvatar = isStudentView
-    ? booking?.tutorAvatarUrl
-    : booking?.studentAvatarUrl;
-
-  const fallbackPartnerName = isStudentView ? "Tutor" : "Student";
-
-  const chatDate = formatDisplayDate(
-    messages[0]?.sentAt || booking?.sessionDate || new Date()
-  );
 
   if (loading) {
     return (
@@ -170,6 +180,8 @@ export default function MessagingPage({ booking, currentUserId }) {
       </div>
     );
   }
+
+  const inputDisabled = messagesUnavailable || !thread;
 
   return (
     <div className="messaging-page">
@@ -186,7 +198,6 @@ export default function MessagingPage({ booking, currentUserId }) {
                 <span>{getInitials(chatPartnerName || fallbackPartnerName)}</span>
               )}
             </div>
-
             <div className="messaging-header__meta">
               <h2>{chatPartnerName || fallbackPartnerName}</h2>
             </div>
@@ -194,7 +205,19 @@ export default function MessagingPage({ booking, currentUserId }) {
         </header>
 
         <section className="messaging-body">
-          {chatDate && <div className="messaging-date">{chatDate}</div>}
+          {messagesUnavailable && (
+            <div className="messaging-fallback-banner" role="alert">
+              ⚠️ Messages unavailable right now. Please try again later.
+            </div>
+          )}
+
+          {unauthorisedError && (
+            <div className="messaging-unauthorised-banner" role="alert">
+              🚫 Unauthorised: {unauthorisedError}
+            </div>
+          )}
+
+          {chatDate && !messagesUnavailable && <div className="messaging-date">{chatDate}</div>}
 
           <div className="messaging-scroll">
             <div className="messaging-booking-card">
@@ -207,15 +230,14 @@ export default function MessagingPage({ booking, currentUserId }) {
               </span>
             </div>
 
-            {messages.length === 0 ? (
+            {messages.length === 0 && !messagesUnavailable ? (
               <div className="messaging-empty">
                 <div className="messaging-empty__brand">ShareCraft</div>
                 <p>Start the conversation here.</p>
               </div>
             ) : (
               messages.filter((msg) => !msg.blocked).map((msg) => {
-                const isMine =
-                  String(msg.senderId) === String(currentUserId);
+                const isMine = String(msg.senderId) === String(currentUserId);
 
                 return (
                   <div
@@ -251,18 +273,31 @@ export default function MessagingPage({ booking, currentUserId }) {
           </div>
         </section>
 
-        {error && <p className="messaging-error">{error}</p>}
+        {sendError && <p className="messaging-error">{sendError}</p>}
 
         <form onSubmit={handleSend} className="messaging-composer">
           <input
             type="text"
-            placeholder="Type a message..."
+            placeholder={messagesUnavailable ? "Messaging unavailable" : "Type a message..."}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             className="messaging-composer__input"
+            disabled={inputDisabled}
+            style={{
+              opacity: inputDisabled ? 0.5 : 1,
+              cursor: inputDisabled ? "not-allowed" : "text",
+            }}
           />
 
-          <button type="submit" className="messaging-composer__send">
+          <button
+            type="submit"
+            className="messaging-composer__send"
+            disabled={inputDisabled}
+            style={{
+              opacity: inputDisabled ? 0.5 : 1,
+              cursor: inputDisabled ? "not-allowed" : "pointer",
+            }}
+          >
             Send
           </button>
         </form>
