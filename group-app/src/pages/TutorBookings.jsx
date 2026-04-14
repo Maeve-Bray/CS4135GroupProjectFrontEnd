@@ -8,6 +8,7 @@ import { getMyProfile } from "../api/authAPI";
 import MessagingPage from "./MessagingPage";
 import ReportModal from "../components/ReportModal";
 import "../styles/tutorBookings.css";
+import { useCallback} from "react";
 
 function ErrorModal({ message, onClose }) {
   if (!message) return null;
@@ -125,21 +126,27 @@ export default function TutorBookings({ tutorId }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarInitialized, setCalendarInitialized] = useState(false);
 
-  const loadBookings = async () => {
-    try {
-      const response = await getTutorBookings(tutorId);
-      setBookings(response.data || []);
-    } catch (error) {
-      console.error("Error loading tutor bookings", error);
-      setErrorMessage("Unable to load bookings right now.");
-    }
-  };
+  const loadBookings = useCallback(async () => {
+  try {
+    const response = await getTutorBookings(tutorId);
+    setBookings(response.data || []);
+  } catch (error) {
+    console.error("Error loading tutor bookings", error);
+    setErrorMessage("Unable to load bookings right now.");
+  }
+}, [tutorId]);
 
   useEffect(() => {
-    if (tutorId) {
-      loadBookings();
-    }
-  }, [tutorId]);
+  if (!tutorId) return;
+
+  loadBookings();
+
+  const interval = setInterval(() => {
+    loadBookings();
+  }, 30000);
+
+  return () => clearInterval(interval);
+}, [tutorId]);
 
   useEffect(() => {
     async function loadStudentNames() {
