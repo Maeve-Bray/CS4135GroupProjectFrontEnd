@@ -52,7 +52,7 @@ const circuitBreaker = {
       this.state = "OPEN";
       this.openedAt = Date.now();
       console.error(
-        `[CircuitBreaker] OPEN — threshold reached after ${this.failures} failure(s)`
+        `[CircuitBreaker] OPEN — threshold reached after ${this.failures} failure(s)`,
       );
     }
   },
@@ -88,7 +88,7 @@ async function withRetry(fetchFn) {
       const delay = BASE_DELAY_MS * Math.pow(2, attempt);
       console.warn(
         `[Retry] Attempt ${attempt + 1}/${MAX_RETRIES} failed. Retrying in ${delay} ms…`,
-        err.message
+        err.message,
       );
       await sleep(delay);
     }
@@ -101,7 +101,7 @@ async function resilientFetch(fetchFn, { retry = false } = {}) {
   if (circuitBreaker.isOpen()) {
     const err = new Error(
       "Message service is currently unavailable (circuit OPEN). " +
-        "Please try again in a few seconds."
+        "Please try again in a few seconds.",
     );
     err.isCircuitOpen = true;
     throw err;
@@ -131,12 +131,14 @@ export async function createThread(bookingId) {
       method: "POST",
       headers: getHeaders(),
       signal,
-    })
+    }),
   );
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to create thread");
+    const error = new Error(err.message || "Failed to create thread");
+    error.status = response.status;
+    throw error;
   }
   return response.json();
 }
@@ -146,12 +148,14 @@ export async function getThreadByBooking(bookingId) {
     fetch(`${API_BASE}/threads/booking/${bookingId}`, {
       headers: getHeaders(),
       signal,
-    })
+    }),
   );
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err.message || "Thread not found");
+    const error = new Error(err.message || "Thread not found");
+    error.status = response.status;
+    throw error;
   }
   return response.json();
 }
@@ -163,7 +167,7 @@ export async function sendMessage(threadId, senderId, content) {
       headers: getHeaders(),
       body: JSON.stringify({ senderId, content }),
       signal,
-    })
+    }),
   );
 
   if (response.status === 401 || response.status === 403) {
@@ -175,7 +179,9 @@ export async function sendMessage(threadId, senderId, content) {
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to send message");
+    const error = new Error(err.message || "Failed to send message");
+    error.status = response.status;
+    throw error;
   }
   return response.json();
 }
@@ -187,12 +193,14 @@ export async function getMessages(threadId) {
         headers: getHeaders(),
         signal,
       }),
-    { retry: true }
+    { retry: true },
   );
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to load messages");
+    const error = new Error(err.message || "Failed to load messages");
+    error.status = response.status;
+    throw error;
   }
   return response.json();
 }

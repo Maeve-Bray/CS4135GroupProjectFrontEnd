@@ -19,7 +19,7 @@ function toDate(value) {
       value[2] ?? 1,
       value[3] ?? 0,
       value[4] ?? 0,
-      value[5] ?? 0
+      value[5] ?? 0,
     );
   }
 
@@ -53,10 +53,7 @@ function getInitials(name) {
 
 function resolveName(user) {
   return (
-    user?.name ||
-    user?.fullName ||
-    user?.email?.split("@")[0] ||
-    "Your Name"
+    user?.name || user?.fullName || user?.email?.split("@")[0] || "Your Name"
   );
 }
 
@@ -79,7 +76,7 @@ export default function MessagingPage({ booking, currentUserId }) {
     : booking?.studentAvatarUrl;
   const fallbackPartnerName = isStudentView ? "Tutor" : "Student";
   const chatDate = formatDisplayDate(
-    messages[0]?.sentAt || booking?.sessionDate || new Date()
+    messages[0]?.sentAt || booking?.sessionDate || new Date(),
   );
 
   useEffect(() => {
@@ -99,12 +96,32 @@ export default function MessagingPage({ booking, currentUserId }) {
         } catch {
           setMessagesUnavailable(true);
         }
-      } catch {
-        try {
-          const created = await createThread(booking.id);
-          setThread(created);
-          setMessages([]);
-        } catch (err) {
+      } catch (err) {
+        if (err.status === 404) {
+          try {
+            const created = await createThread(booking.id);
+            setThread(created);
+            setMessages([]);
+          } catch (createErr) {
+            if (createErr.status === 409) {
+              try {
+                const existing = await getThreadByBooking(booking.id);
+                setThread(existing);
+
+                try {
+                  const msgs = await getMessages(existing.threadId);
+                  setMessages(msgs || []);
+                } catch {
+                  setMessagesUnavailable(true);
+                }
+              } catch (reloadErr) {
+                setSendError(reloadErr.message || "Could not load existing thread.");
+              }
+            } else {
+              setSendError(createErr.message || "Could not create thread.");
+            }
+          }
+        } else {
           setSendError(err.message || "Could not load messages.");
         }
       } finally {
@@ -164,7 +181,10 @@ export default function MessagingPage({ booking, currentUserId }) {
       }
     } catch (err) {
       if (err.isUnauthorised) {
-        setUnauthorisedError(err.message || "Unauthorised — you are not a participant of this booking.");
+        setUnauthorisedError(
+          err.message ||
+            "Unauthorised — you are not a participant of this booking.",
+        );
       } else {
         setSendError(err.message || "Failed to send message.");
       }
@@ -195,7 +215,9 @@ export default function MessagingPage({ booking, currentUserId }) {
                   alt={chatPartnerName || fallbackPartnerName}
                 />
               ) : (
-                <span>{getInitials(chatPartnerName || fallbackPartnerName)}</span>
+                <span>
+                  {getInitials(chatPartnerName || fallbackPartnerName)}
+                </span>
               )}
             </div>
             <div className="messaging-header__meta">
@@ -217,13 +239,17 @@ export default function MessagingPage({ booking, currentUserId }) {
             </div>
           )}
 
-          {chatDate && !messagesUnavailable && <div className="messaging-date">{chatDate}</div>}
+          {chatDate && !messagesUnavailable && (
+            <div className="messaging-date">{chatDate}</div>
+          )}
 
           <div className="messaging-scroll">
             <div className="messaging-booking-card">
               <strong>Session request sent:</strong>
               <span>Skill: {booking?.skill || "—"}</span>
-              <span>Date: {formatDisplayDate(booking?.sessionDate) || "—"}</span>
+              <span>
+                Date: {formatDisplayDate(booking?.sessionDate) || "—"}
+              </span>
               <span>
                 Time: {booking?.startTime || "—"}
                 {booking?.endTime ? `-${booking.endTime}` : ""}
@@ -236,37 +262,39 @@ export default function MessagingPage({ booking, currentUserId }) {
                 <p>Start the conversation here.</p>
               </div>
             ) : (
-              messages.filter((msg) => !msg.blocked).map((msg) => {
-                const isMine = String(msg.senderId) === String(currentUserId);
+              messages
+                .filter((msg) => !msg.blocked)
+                .map((msg) => {
+                  const isMine = String(msg.senderId) === String(currentUserId);
 
-                return (
-                  <div
-                    key={msg.messageId}
-                    className={`messaging-row ${
-                      isMine ? "messaging-row--mine" : "messaging-row--theirs"
-                    }`}
-                  >
+                  return (
                     <div
-                      className={`messaging-bubble ${
-                        isMine
-                          ? "messaging-bubble--mine"
-                          : "messaging-bubble--theirs"
+                      key={msg.messageId}
+                      className={`messaging-row ${
+                        isMine ? "messaging-row--mine" : "messaging-row--theirs"
                       }`}
                     >
-                      <p>{msg.content}</p>
-                      <span>{formatTime(msg.sentAt)}</span>
-                    </div>
+                      <div
+                        className={`messaging-bubble ${
+                          isMine
+                            ? "messaging-bubble--mine"
+                            : "messaging-bubble--theirs"
+                        }`}
+                      >
+                        <p>{msg.content}</p>
+                        <span>{formatTime(msg.sentAt)}</span>
+                      </div>
 
-                    {!isMine && (
-                      <ReportModal
-                        contentType="MESSAGE"
-                        contentId={msg.messageId}
-                        label="Report"
-                      />
-                    )}
-                  </div>
-                );
-              })
+                      {!isMine && (
+                        <ReportModal
+                          contentType="MESSAGE"
+                          contentId={msg.messageId}
+                          label="Report"
+                        />
+                      )}
+                    </div>
+                  );
+                })
             )}
 
             <div ref={bottomRef} />
@@ -278,7 +306,11 @@ export default function MessagingPage({ booking, currentUserId }) {
         <form onSubmit={handleSend} className="messaging-composer">
           <input
             type="text"
-            placeholder={messagesUnavailable ? "Messaging unavailable" : "Type a message..."}
+            placeholder={
+              messagesUnavailable
+                ? "Messaging unavailable"
+                : "Type a message..."
+            }
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             className="messaging-composer__input"
