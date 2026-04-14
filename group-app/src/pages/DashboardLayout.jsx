@@ -40,6 +40,14 @@ function DashboardLayout({ currentPage, setCurrentPage, logout, children }) {
             Schedule
           </button>
 
+          <button
+            type="button"
+            className={`sidebar-link ${currentPage === "messages" ? "active" : ""}`}
+            onClick={() => setCurrentPage("messages")}
+          >
+            Messages
+          </button>
+
          
         </nav>
 

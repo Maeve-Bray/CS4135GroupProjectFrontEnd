@@ -13,7 +13,7 @@ import DashboardLayout from "./DashboardLayout";
 import SearchPage from "./SearchPage";
 
 import "./App.css";
-import MessagingPage from "./MessagingPage";
+import MessageInbox from "./MessageInbox";
 
 function App() {
   const { auth, logout } = useAuth();
@@ -72,7 +72,7 @@ function App() {
   )}
 
   {currentPage === "messages" && (
-    <MessagingPage userId={userId} userRole={auth.role} />
+    <MessageInbox userId={userId} userRole={auth.role} />
   )}
 
   {auth.role === "STUDENT" && currentPage === "book" && (
