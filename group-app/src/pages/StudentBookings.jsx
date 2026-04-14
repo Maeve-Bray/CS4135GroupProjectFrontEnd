@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { cancelBooking, getStudentBookings } from "../api/bookingAPI";
 import { getMyProfile } from "../api/authAPI";
 import MessagingPage from "./MessagingPage";
@@ -193,22 +193,27 @@ const [ratingBooking, setRatingBooking] = useState(null);
 const [ratingValue, setRatingValue] = useState(5);
 const [ratingComment, setRatingComment] = useState("");
 
-  const loadBookings = async () => {
-    try {
-      const response = await getStudentBookings(studentId);
-      setBookings(response.data || []);
-    } catch (error) {
-      console.error("Error loading bookings", error);
-      console.error("Response data:", error.response?.data);
-      setErrorMessage("Unable to load bookings right now.");
-    }
-  };
+  
+const loadBookings = useCallback(async () => {
+  try {
+    const response = await getStudentBookings(studentId);
+    setBookings(response.data || []);
+  } catch (error) {
+    console.error("Error loading student bookings", error);
+    setErrorMessage("Unable to load bookings right now.");
+  }
+}, [studentId]);
+ useEffect(() => {
+  if (!studentId) return;
 
-  useEffect(() => {
-    if (studentId) {
-      loadBookings();
-    }
-  }, [studentId]);
+  loadBookings();
+
+  const interval = setInterval(() => {
+    loadBookings();
+  }, 30000);
+
+  return () => clearInterval(interval);
+}, [studentId]);
 
   useEffect(() => {
     async function loadTutorNames() {
