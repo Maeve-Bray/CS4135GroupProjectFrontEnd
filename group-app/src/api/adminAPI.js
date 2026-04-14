@@ -17,7 +17,7 @@ async function handleResponse(res) {
 // --- Submit a report (any logged-in user) ---
 
 export async function submitReport(token, { reportedByUserId, contentType, contentId, reason }) {
-  const res = await fetch("http://localhost:8080/api/reports", {
+  const res = await fetch("http://localhost:8085/api/reports", {
     method: "POST",
     headers: authHeaders(token),
     body: JSON.stringify({ reportedByUserId, contentType, contentId, reason }),
