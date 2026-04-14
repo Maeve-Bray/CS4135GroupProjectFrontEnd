@@ -1,19 +1,20 @@
 import axios from "axios";
+import { API_BASE_URL } from "./baseURL.js";
 
-const API_BASE_URL = "http://localhost:8080/api/reviews";
+const REVIEWS = `${API_BASE_URL}/api/reviews`;
 
 export const createTutorReview = (data) => {
-  return axios.post(API_BASE_URL, data);
+  return axios.post(REVIEWS, data);
 };
 
 export const getReviewByBookingId = (bookingId) => {
-  return axios.get(`${API_BASE_URL}/booking/${bookingId}`);
+  return axios.get(`${REVIEWS}/booking/${bookingId}`);
 };
 
 export const getTutorReviews = (tutorId) => {
-  return axios.get(`${API_BASE_URL}/tutor/${tutorId}`);
+  return axios.get(`${REVIEWS}/tutor/${tutorId}`);
 };
 
 export const getTutorAverageRating = (tutorId) => {
-  return axios.get(`${API_BASE_URL}/tutor/${tutorId}/average`);
+  return axios.get(`${REVIEWS}/tutor/${tutorId}/average`);
 };

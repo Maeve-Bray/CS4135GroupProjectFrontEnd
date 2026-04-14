@@ -1,4 +1,6 @@
-const API_BASE = "http://localhost:8080/api/admin";
+import { API_BASE_URL } from "./baseURL.js";
+
+const API_BASE = `${API_BASE_URL}/api/admin`;
 
 function authHeaders(token) {
   return {
@@ -17,7 +19,7 @@ async function handleResponse(res) {
 // --- Submit a report (any logged-in user) ---
 
 export async function submitReport(token, { reportedByUserId, contentType, contentId, reason }) {
-  const res = await fetch("http://localhost:8080/api/reports", {
+  const res = await fetch(`${API_BASE_URL}/api/reports`, {
     method: "POST",
     headers: authHeaders(token),
     body: JSON.stringify({ reportedByUserId, contentType, contentId, reason }),
@@ -73,14 +75,14 @@ export async function getReportedUser(token, userId) {
 }
 
 export async function getReportedBooking(token, bookingId) {
-  const res = await fetch(`http://localhost:8080/api/bookings/${bookingId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
     headers: authHeaders(token),
   });
   return handleResponse(res);
 }
 
 export async function getReportedTutorProfile(token, tutorId) {
-  const res = await fetch(`http://localhost:8080/api/tutors/profile/${tutorId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/tutors/profile/${tutorId}`, {
     headers: authHeaders(token),
   });
   return handleResponse(res);

@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_BASE_URL } from "./baseURL.js";
 
-const API_BASE_URL = "http://localhost:8080/api/users";
+const USERS = `${API_BASE_URL}/api/users`;
 
 export const updateUserProfile = (userId, userData) => {
-  return axios.put(`${API_BASE_URL}/${userId}`, userData);
+  return axios.put(`${USERS}/${userId}`, userData);
 };

@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_BASE_URL } from "./baseURL.js";
 
 const API = axios.create({
-    baseURL: "http://localhost:8080/api/tutors",
+    baseURL: `${API_BASE_URL}/api/tutors`,
 });
 
 /** Distinct non-empty skill names from all tutor profiles (sorted). */
