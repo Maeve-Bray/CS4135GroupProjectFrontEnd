@@ -118,7 +118,7 @@ function ReportsPanel({ token, adminId }) {
             {reports.map((report) => (
               <tr key={report.id}>
                 <td>{report.id}</td>
-                <td>{report.reportedByUserId}</td>
+                <td>{report.reportedByEmail ?? report.reportedByUserId}</td>
                 <td>{report.contentType}</td>
                 <td>{report.contentId}</td>
                 <td className="report-reason">{report.reason}</td>
