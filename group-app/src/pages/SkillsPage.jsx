@@ -76,13 +76,13 @@ export default function SkillsPage({ tutorId }) {
         apiSkills.map((item) => {
           const { categoryKey, subcategoryKey } = findCategoryKeysFromLabels(
             item.category,
-            item.subcategory
+            item.subcategory,
           );
 
           const { topicKey, name } = resolveTopicFromName(
             categoryKey,
             subcategoryKey,
-            item.name
+            item.name,
           );
 
           return {
@@ -90,11 +90,10 @@ export default function SkillsPage({ tutorId }) {
             subcategoryKey,
             topicKey,
             name,
-            proficiencyLevel:
-              item.proficiencyLevel ?? item.proficiency ?? "",
+            proficiencyLevel: item.proficiencyLevel ?? item.proficiency ?? "",
             experienceNote: item.experienceNote ?? "",
           };
-        })
+        }),
       );
     } else {
       setSkills([emptySkill()]);
@@ -199,7 +198,7 @@ export default function SkillsPage({ tutorId }) {
 
     if (skillsPayload.length === 0) {
       setSaveError(
-        "Add at least one skill: choose Academic or Non-academic, an area, and a topic (or Other)."
+        "Add at least one skill: choose Academic or Non-academic, an area, and a topic (or Other).",
       );
       return;
     }
@@ -229,7 +228,7 @@ export default function SkillsPage({ tutorId }) {
     return <p>Loading skills…</p>;
   }
 
-  const listedSkills = skills.filter((skill) => skill.name.trim());
+  const savedSkills = profileData?.skills || [];
 
   return (
     <div className="skills-page-premium-wrapper">
@@ -461,31 +460,58 @@ export default function SkillsPage({ tutorId }) {
 
       <div className="premium-header">
         <h1>My Skills Library</h1>
-        <p>Curate your active skills, define your expertise levels, and showcase exactly what you bring to the table.</p>
+        <p>
+          Curate your active skills, define your expertise levels, and showcase
+          exactly what you bring to the table.
+        </p>
       </div>
 
       <div className="active-skills-container">
         <h2 className="section-title">Current Active Skills</h2>
-        {listedSkills.length > 0 ? (
+        {savedSkills.length > 0 ? (
           <div className="skills-grid-modern">
-            {listedSkills.map((skill, index) => (
-              <div key={`${skill.name}-${index}`} className="premium-skill-card">
+            {savedSkills.map((skill, index) => (
+              <div
+                key={`${skill.name}-${index}`}
+                className="premium-skill-card"
+              >
                 <h3>{skill.name}</h3>
                 {skill.proficiencyLevel && (
-                  <span className="badge-proficiency">{skill.proficiencyLevel}</span>
+                  <span className="badge-proficiency">
+                    {skill.proficiencyLevel}
+                  </span>
+                )}
+                {skill.experienceNote && (
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      color: "#666",
+                      margin: "8px 0 0 0",
+                    }}
+                  >
+                    {skill.experienceNote}
+                  </p>
                 )}
               </div>
             ))}
           </div>
         ) : (
           <div className="empty-state">
-            <p>You haven't listed any skills yet. Start adding them below!</p>
+            <p>
+              You haven't saved any skills yet. Add them in the form below and
+              click "Save Skills Portfolio".
+            </p>
           </div>
         )}
       </div>
 
       <div className="form-container">
         <h2 className="section-title">Update Your Toolset</h2>
+        <p style={{ color: "#666", marginBottom: "28px", fontSize: "15px" }}>
+          Edit your skills below. Changes are saved only when you click "Save
+          Skills Portfolio". Your "Current Active Skills" section above updates
+          after saving.
+        </p>
         <form onSubmit={handleSubmit}>
           {skills.map((row, index) => {
             const areas = areasForBranch(row.categoryKey);
@@ -499,11 +525,15 @@ export default function SkillsPage({ tutorId }) {
                     <select
                       className="premium-select"
                       value={row.categoryKey}
-                      onChange={(e) => updateSkill(index, "categoryKey", e.target.value)}
+                      onChange={(e) =>
+                        updateSkill(index, "categoryKey", e.target.value)
+                      }
                     >
                       <option value="">Choose classification...</option>
                       {SKILL_BRANCHES.map((b) => (
-                        <option key={b.key} value={b.key}>{b.label}</option>
+                        <option key={b.key} value={b.key}>
+                          {b.label}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -513,12 +543,16 @@ export default function SkillsPage({ tutorId }) {
                     <select
                       className="premium-select"
                       value={row.subcategoryKey}
-                      onChange={(e) => updateSkill(index, "subcategoryKey", e.target.value)}
+                      onChange={(e) =>
+                        updateSkill(index, "subcategoryKey", e.target.value)
+                      }
                       disabled={!row.categoryKey}
                     >
                       <option value="">Select specific area...</option>
                       {areas.map((a) => (
-                        <option key={a.key} value={a.key}>{a.label}</option>
+                        <option key={a.key} value={a.key}>
+                          {a.label}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -527,15 +561,27 @@ export default function SkillsPage({ tutorId }) {
                     <label>Specific Topic</label>
                     <select
                       className="premium-select"
-                      value={topicList.some((t) => t.key === row.topicKey) ? row.topicKey : (row.topicKey === CUSTOM_TOPIC ? CUSTOM_TOPIC : "")}
-                      onChange={(e) => updateTopicSelection(index, e.target.value)}
+                      value={
+                        topicList.some((t) => t.key === row.topicKey)
+                          ? row.topicKey
+                          : row.topicKey === CUSTOM_TOPIC
+                            ? CUSTOM_TOPIC
+                            : ""
+                      }
+                      onChange={(e) =>
+                        updateTopicSelection(index, e.target.value)
+                      }
                       disabled={!row.subcategoryKey}
                     >
                       <option value="">Select exact topic...</option>
                       {topicList.map((t) => (
-                        <option key={t.key} value={t.key}>{t.label}</option>
+                        <option key={t.key} value={t.key}>
+                          {t.label}
+                        </option>
                       ))}
-                      <option value={CUSTOM_TOPIC}>Topic missing? Specify other...</option>
+                      <option value={CUSTOM_TOPIC}>
+                        Topic missing? Specify other...
+                      </option>
                     </select>
                   </div>
 
@@ -547,7 +593,9 @@ export default function SkillsPage({ tutorId }) {
                         className="premium-input"
                         placeholder="e.g. Advanced Quantum Mechanics"
                         value={row.name}
-                        onChange={(e) => updateSkill(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          updateSkill(index, "name", e.target.value)
+                        }
                       />
                     </div>
                   )}
@@ -557,10 +605,14 @@ export default function SkillsPage({ tutorId }) {
                     <select
                       className="premium-select"
                       value={row.proficiencyLevel}
-                      onChange={(e) => updateSkill(index, "proficiencyLevel", e.target.value)}
+                      onChange={(e) =>
+                        updateSkill(index, "proficiencyLevel", e.target.value)
+                      }
                     >
                       {PROFICIENCY_OPTIONS.map((o) => (
-                        <option key={o.value || "empty"} value={o.value}>{o.label}</option>
+                        <option key={o.value || "empty"} value={o.value}>
+                          {o.label}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -572,12 +624,18 @@ export default function SkillsPage({ tutorId }) {
                       rows={1}
                       placeholder="Brief context on your experience"
                       value={row.experienceNote}
-                      onChange={(e) => updateSkill(index, "experienceNote", e.target.value)}
+                      onChange={(e) =>
+                        updateSkill(index, "experienceNote", e.target.value)
+                      }
                     />
                   </div>
                 </div>
 
-                <button type="button" className="btn btn-remove" onClick={() => removeSkill(index)}>
+                <button
+                  type="button"
+                  className="btn btn-remove"
+                  onClick={() => removeSkill(index)}
+                >
                   Remove Skill Entry
                 </button>
               </div>
@@ -585,8 +643,20 @@ export default function SkillsPage({ tutorId }) {
           })}
 
           <button type="button" className="btn btn-add" onClick={addSkill}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 5V19M5 12H19"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             Add Another Skill
           </button>
@@ -596,7 +666,9 @@ export default function SkillsPage({ tutorId }) {
           </button>
         </form>
 
-        {successMessage && <div className="alert alert-success">{successMessage}</div>}
+        {successMessage && (
+          <div className="alert alert-success">{successMessage}</div>
+        )}
         {saveError && <div className="alert alert-error">{saveError}</div>}
       </div>
     </div>
