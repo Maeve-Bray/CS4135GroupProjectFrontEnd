@@ -120,7 +120,7 @@ CS4135GroupProjectFrontEnd/
 ### Install and Run
 
 ```bash
-git clone <this-repo-url>
+git clone https://github.com/Maeve-Bray/CS4135GroupProjectFrontEnd.git
 cd CS4135GroupProjectFrontEnd/group-app
 npm install
 npm run dev
