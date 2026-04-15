@@ -131,14 +131,10 @@ The app will be available at `http://localhost:5173` by default.
 ### Build for Production
 
 ```bash
-npm run build
+npm run dev
 ```
 
-### Lint
 
-```bash
-npm run lint
-```
 
 ---
 
