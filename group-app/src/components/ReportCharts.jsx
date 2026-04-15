@@ -64,7 +64,7 @@ export default function ReportCharts({ token }) {
     <div className="report-charts">
       <div className="report-chart-card">
         <h3 className="report-chart-title">Reports by Status</h3>
-        <ResponsiveContainer width="100%" height={260}>
+        <ResponsiveContainer width="100%" height={360}>
           <PieChart>
             <Pie
               data={statusData}
@@ -85,7 +85,7 @@ export default function ReportCharts({ token }) {
 
       <div className="report-chart-card">
         <h3 className="report-chart-title">Reports by Content Type</h3>
-        <ResponsiveContainer width="100%" height={260}>
+        <ResponsiveContainer width="100%" height={360}>
           <PieChart>
             <Pie
               data={typeData}
