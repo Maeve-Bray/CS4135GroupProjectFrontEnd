@@ -11,6 +11,7 @@ import StudentProfile from "./StudentProfile";
 import AdminDashboard from "./AdminDashboard";
 import DashboardLayout from "./DashboardLayout";
 import SearchPage from "./SearchPage";
+import SkillsPage from "./SkillsPage";
 
 import "./App.css";
 import MessageInbox from "./MessageInbox";
@@ -81,6 +82,10 @@ function App() {
 
   {auth.role === "TUTOR" && currentPage === "tutorBookings" && (
     <TutorBookings tutorId={userId} />
+  )}
+
+  {auth.role === "TUTOR" && currentPage === "skills" && (
+    <SkillsPage tutorId={userId} />
   )}
 </DashboardLayout>
     );
