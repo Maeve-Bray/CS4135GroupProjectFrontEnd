@@ -353,7 +353,6 @@ const handleSubmitReview = async () => {
   try {
     await createTutorReview({
       bookingId: ratingBooking.id,
-      studentId,
       rating: ratingValue,
       comment: ratingComment,
     });
