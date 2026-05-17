@@ -34,5 +34,5 @@ jobs:
           push: true
           platforms: linux/arm64
           build-args: |
-            VITE_API_BASE_URL=/api
+            VITE_API_BASE_URL=
           tags: ${{ secrets.DOCKER_USERNAME }}/sharecraft-frontend:latest
