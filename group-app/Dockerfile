@@ -1,12 +1,13 @@
-# ShareCraft frontend — production static build behind NGINX (lab deployment pattern).
-# Build: docker build --build-arg VITE_API_BASE_URL=https://api.example.com -t sharecraft-frontend .
+# ShareCraft frontend — production static build behind NGINX.
+# Build example:
+# docker build --build-arg VITE_API_BASE_URL=/api -t rebecca2745/sharecraft-frontend:latest .
 
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-ARG VITE_API_BASE_URL=http://localhost:8080
+ARG VITE_API_BASE_URL=/api
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
