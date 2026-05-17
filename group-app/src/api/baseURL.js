@@ -1,5 +1,5 @@
 function normalizeBaseUrl(raw) {
-  const s = (raw || "").trim() || "http://localhost:8080";
+  const s = (raw || "").trim();
   return s.replace(/\/+$/, "");
 }
 
