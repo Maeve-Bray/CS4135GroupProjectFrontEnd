@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/useAuth";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
@@ -20,7 +20,12 @@ function App() {
   const { auth, logout } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
   const [currentPage, setCurrentPage] = useState("home");
-  
+
+  // Reset to home whenever the user logs in or out
+  useEffect(() => {
+    setCurrentPage("home");
+  }, [auth]);
+
 
   if (auth) {
     const userId = auth.userId;
